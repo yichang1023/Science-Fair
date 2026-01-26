@@ -805,10 +805,11 @@
         }
 
 
-           function toggleAppMode() {
+          function toggleAppMode() {
     appMode = (appMode === 'trial') ? 'api' : 'trial';
     updateModeUI();
-        }
+}
+
 
         function updateModeUI() {
             const trialPill = document.getElementById('mode-trial-pill');
@@ -879,41 +880,26 @@
             if (!userApiKey && !SYSTEM_API_KEY) { dot.classList.remove('hidden'); } else { dot.classList.add('hidden'); }
         }
 
-       async function callGeminiAPI(prompt) {
-    try {
-        const resp = await fetch('/api/generate', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                provider: 'gemini',
-                model: 'gemini-1.5-flash',
-                prompt,
-                temperature: 0.2
-            })
-        });
+async function callGeminiAPI(prompt) {
+    const resp = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            prompt,
+            temperature: 0.2
+        })
+    });
 
-        if (!resp.ok) {
-            const txt = await resp.text().catch(() => "");
-            throw new Error(`API Error: ${resp.status} ${txt}`);
-        }
-
-        const data = await resp.json();
-
-        // 你後端可能回傳 outputText 或 text（兩種我都兼容）
-        const out = data.outputText ?? data.text ?? data.result ?? "";
-        if (!out) throw new Error("API 回傳格式不含 outputText/text，請檢查 /api/generate.js");
-
-        return out;
-    } catch (error) {
-        // 若正式版失敗，讓使用者選擇切回體驗版（保留你原本的使用者體驗）
-        if (confirm(`連線錯誤（${error.message}）。是否暫時切換回體驗版？`)) {
-            appMode = 'trial';
-            updateModeUI();
-            throw new Error("Switched to Trial");
-        }
-        throw error;
+    if (!resp.ok) {
+        const txt = await resp.text().catch(() => "");
+        throw new Error(`API Error: ${resp.status} ${txt}`);
     }
+
+    const data = await resp.json();
+    // 對齊你 generate.js 的回傳欄位
+    return data.outputText || "";
 }
+
 
 
         // --- 4. Feature Implementation (Dual Engine) ---
@@ -1332,3 +1318,4 @@
 </body>
 
 </html>
+
