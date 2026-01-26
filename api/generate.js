@@ -21,7 +21,7 @@ module.exports = async (req, res) => {
       return;
     }
 
-    const usedModel = model || process.env.DEFAULT_MODEL || "gemini-1.5-flash";
+    const usedModel = model || process.env.DEFAULT_MODEL || "gemini-2.0-flash";
 
     const url =
       `https://generativelanguage.googleapis.com/v1beta/models/` +
