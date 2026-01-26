@@ -884,7 +884,11 @@ async function callGeminiAPI(prompt) {
     const resp = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-   body: JSON.stringify({ prompt, temperature: 0.2 })
+   body: JSON.stringify({
+  provider: 'gemini',
+  prompt,
+  temperature: 0.2
+})
 
     });
 
@@ -1316,5 +1320,6 @@ async function callGeminiAPI(prompt) {
 </body>
 
 </html>
+
 
 
