@@ -1,1 +1,67 @@
+[
+  {
+    "id": "T001",
+    "type": "qa_fact",
+    "prompt": "請回答：台灣的首都是哪裡？請只輸出城市名稱。",
+    "ground_truth_id": "G001",
+    "keywords": ["台北", "臺北"]
+  },
+  {
+    "id": "T002",
+    "type": "qa_fact",
+    "prompt": "請回答：水的化學式是什麼？請只輸出化學式。",
+    "ground_truth_id": "G002",
+    "keywords": ["h2o"]
+  },
+  {
+    "id": "T003",
+    "type": "qa_fact",
+    "prompt": "請回答：圓周率 π 約等於多少（取到小數點後兩位）？只輸出數字。",
+    "ground_truth_id": "G003",
+    "keywords": ["3.14"]
+  },
+  {
+    "id": "T004",
+    "type": "rewrite",
+    "prompt": "請將下列句子改寫為更正式的書面語，但保持意思不變：『我覺得這個方法很快就能搞定。』"
+  },
+  {
+    "id": "T005",
+    "type": "generate",
+    "prompt": "請用 80~120 字寫一段說明：什麼是『生成式 AI 的幻覺』，語氣給高中生看得懂。"
+  },
+  {
+    "id": "T006",
+    "type": "qa_fact",
+    "prompt": "請回答：莎士比亞的英文姓名是什麼？只輸出姓名。",
+    "ground_truth_id": "G004",
+    "keywords": ["william", "shakespeare"]
+  },
+  {
+    "id": "T007",
+    "type": "qa_fact",
+    "prompt": "請回答：光速約為每秒多少公尺？用科學記號表示到兩位有效數字，例如 3.0×10^8。只輸出數值。",
+    "ground_truth_id": "G005",
+    "keywords": ["3.0", "10^8"]
+  },
+  {
+    "id": "T008",
+    "type": "qa_open",
+    "prompt": "請用三點條列說明：為什麼在學習平台中需要評估大型語言模型的幻覺？"
+  },
+  {
+    "id": "T009",
+    "type": "qa_fact",
+    "prompt": "請回答：2020 年東京奧運舉辦的年份是 2020 還是 2021？只輸出年份數字。",
+    "ground_truth_id": "G006",
+    "keywords": ["2021"]
+  },
+  {
+    "id": "T010",
+    "type": "qa_fact",
+    "prompt": "請回答：地球繞太陽公轉一圈約為多少天？只輸出數字。",
+    "ground_truth_id": "G007",
+    "keywords": ["365"]
+  }
+]
 
