@@ -804,19 +804,10 @@
             updateStatusDot();
         }
 
-        function toggleAppMode() {
-            if (appMode === 'trial') {
-                // Switch to API
-                if (!userApiKey && !SYSTEM_API_KEY) {
-                    openSettings();
-                    return;
-                }
-                appMode = 'api';
-            } else {
-                // Switch to Trial
-                appMode = 'trial';
-            }
-            updateModeUI();
+
+           function toggleAppMode() {
+    appMode = (appMode === 'trial') ? 'api' : 'trial';
+    updateModeUI();
         }
 
         function updateModeUI() {
@@ -888,29 +879,42 @@
             if (!userApiKey && !SYSTEM_API_KEY) { dot.classList.remove('hidden'); } else { dot.classList.add('hidden'); }
         }
 
-        async function callGeminiAPI(prompt) {
-            const keyToUse = userApiKey || SYSTEM_API_KEY;
-            if (!keyToUse) throw new Error("請先設定 API Key");
-            
-            try {
-                const response = await fetch(`${BASE_URL}?key=${keyToUse}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-                });
-                if (!response.ok) throw new Error(`API Error: ${response.status}`);
-                const data = await response.json();
-                return data.candidates[0].content.parts[0].text;
-            } catch (error) {
-                // If error, ask to switch to trial
-                if(confirm(`連線錯誤 (${error.message})。是否暫時切換回體驗版？`)) {
-                    appMode = 'trial';
-                    updateModeUI();
-                    throw new Error("Switched to Trial"); // Stop current exec
-                }
-                throw error;
-            }
+       async function callGeminiAPI(prompt) {
+    try {
+        const resp = await fetch('/api/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                provider: 'gemini',
+                model: 'gemini-1.5-flash',
+                prompt,
+                temperature: 0.2
+            })
+        });
+
+        if (!resp.ok) {
+            const txt = await resp.text().catch(() => "");
+            throw new Error(`API Error: ${resp.status} ${txt}`);
         }
+
+        const data = await resp.json();
+
+        // 你後端可能回傳 outputText 或 text（兩種我都兼容）
+        const out = data.outputText ?? data.text ?? data.result ?? "";
+        if (!out) throw new Error("API 回傳格式不含 outputText/text，請檢查 /api/generate.js");
+
+        return out;
+    } catch (error) {
+        // 若正式版失敗，讓使用者選擇切回體驗版（保留你原本的使用者體驗）
+        if (confirm(`連線錯誤（${error.message}）。是否暫時切換回體驗版？`)) {
+            appMode = 'trial';
+            updateModeUI();
+            throw new Error("Switched to Trial");
+        }
+        throw error;
+    }
+}
+
 
         // --- 4. Feature Implementation (Dual Engine) ---
 
@@ -1326,4 +1330,5 @@
 
     </script>
 </body>
+
 </html>
