@@ -1,0 +1,1347 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>華語AI百寶箱 - 您的智能教學夥伴</title>
+    
+    <!-- 1. 定義 process 環境變數，確保 React 相關庫正確運行 -->
+    <script>
+        window.process = { env: { NODE_ENV: 'production' } };
+    </script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 2. 使用穩定的 React Development 版本 (必須在 Babel 之前) -->
+    <script crossorigin src="https://unpkg.com/react@18.2.0/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.development.js"></script>
+    
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- 3. 使用 Lucide UMD (非 React 版本) 並在 JS 中手動處理圖標 (更穩定) -->
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.js"></script>
+
+    <style>
+        /* Custom Scrollbar for nicer UI */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .zoom-in {
+            animation: zoomIn 0.2s ease-out;
+        }
+        @keyframes zoomIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        // --- 解構 React 與 Lucide ---
+        const { useState, useEffect, useRef } = React;
+        
+        // --- 圖標兼容性解決方案：將 Lucide 函式庫圖標轉換為 React 組件 ---
+        const Lucide = window.lucide || {};
+        
+        // 創建一個通用圖標組件，使用 React.createElement 包裝 Lucide SVG 內容
+        const Icon = ({ name, size, className }) => {
+            const iconData = Lucide.icons ? Lucide.icons[name] : null;
+            if (!iconData) {
+                // 容錯處理：返回一個簡單的警告圖標
+                return <svg width={size || 24} height={size || 24} className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>;
+            }
+
+            return React.createElement(
+                'svg',
+                {
+                    width: size || 24,
+                    height: size || 24,
+                    viewBox: "0 0 24 24",
+                    fill: "none",
+                    stroke: "currentColor",
+                    strokeWidth: "2",
+                    strokeLinecap: "round",
+                    strokeLinejoin: "round",
+                    className: className
+                },
+                iconData.map((data, index) => React.createElement(data[0], data[1]))
+            );
+        };
+        
+        // 將所有需要的圖標名稱映射到新的 Icon 組件
+        const icons = {
+            BookOpen: (props) => <Icon name="book-open" {...props} />, 
+            PenTool: (props) => <Icon name="pen-tool" {...props} />, 
+            MessageCircle: (props) => <Icon name="message-circle" {...props} />, 
+            Bot: (props) => <Icon name="bot" {...props} />, 
+            Headphones: (props) => <Icon name="headphones" {...props} />, 
+            Menu: (props) => <Icon name="menu" {...props} />, 
+            X: (props) => <Icon name="x" {...props} />, 
+            ChevronRight: (props) => <Icon name="chevron-right" {...props} />, 
+            ChevronDown: (props) => <Icon name="chevron-down" {...props} />, 
+            Settings: (props) => <Icon name="settings" {...props} />, 
+            User: (props) => <Icon name="user" {...props} />, 
+            Globe: (props) => <Icon name="globe" {...props} />, 
+            Save: (props) => <Icon name="save" {...props} />, 
+            Trash2: (props) => <Icon name="trash-2" {...props} />, 
+            Download: (props) => <Icon name="download" {...props} />, 
+            Zap: (props) => <Icon name="zap" {...props} />, 
+            BarChart3: (props) => <Icon name="bar-chart-3" {...props} />, 
+            RefreshCw: (props) => <Icon name="refresh-cw" {...props} />, 
+            Search: (props) => <Icon name="search" {...props} />, 
+            Layout: (props) => <Icon name="layout" {...props} />, 
+            Code: (props) => <Icon name="code" {...props} />, 
+            AlertCircle: (props) => <Icon name="alert-circle" {...props} />, 
+            Sparkles: (props) => <Icon name="sparkles" {...props} />, 
+            Image: (props) => <Icon name="image" {...props} />,
+            Play: (props) => <Icon name="play" {...props} />, 
+            Volume2: (props) => <Icon name="volume-2" {...props} />, 
+            CheckCircle2: (props) => <Icon name="check-circle-2" {...props} />, 
+            HelpCircle: (props) => <Icon name="help-circle" {...props} />, 
+            XCircle: (props) => <Icon name="x-circle" {...props} />, 
+            Eye: (props) => <Icon name="eye" {...props} />, 
+            EyeOff: (props) => <Icon name="eye-off" {...props} />, 
+            SplitSquareHorizontal: (props) => <Icon name="split-square-horizontal" {...props} />, 
+            ArrowRightLeft: (props) => <Icon name="arrow-right-left" {...props} />, 
+            Send: (props) => <Icon name="send" {...props} />, 
+            UserCircle2: (props) => <Icon name="user-circle-2" {...props} />, 
+            GraduationCap: (props) => <Icon name="graduation-cap" {...props} />, 
+            Key: (props) => <Icon name="key" {...props} />
+        };
+
+
+        const { 
+            BookOpen, PenTool, MessageCircle, Bot, Headphones, Menu, X, 
+            ChevronRight, ChevronDown, Settings, User, Globe, Save, Trash2, 
+            Download, Zap, BarChart3, RefreshCw, Search, Layout, Code, 
+            AlertCircle, Sparkles, Image: ImageIcon, Play, Volume2, 
+            CheckCircle2, HelpCircle, XCircle, Eye, EyeOff, 
+            SplitSquareHorizontal, ArrowRightLeft, Send, UserCircle2, 
+            GraduationCap, Key
+        } = icons;
+
+        // --- 工具函數：PCM 轉 WAV ---
+        const pcmToWav = (pcmData, sampleRate = 24000) => {
+            const binaryString = window.atob(pcmData);
+            const len = binaryString.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            const wavHeader = new ArrayBuffer(44);
+            const view = new DataView(wavHeader);
+            const writeString = (view, offset, string) => {
+                for (let i = 0; i < string.length; i++) {
+                    view.setUint8(offset + i, string.charCodeAt(i));
+                }
+            };
+            writeString(view, 0, 'RIFF');
+            view.setUint32(4, 36 + bytes.length, true);
+            view.setUint32(8, 0x57415645, true); // 'WAVE'
+            writeString(view, 12, 'fmt ');
+            view.setUint32(16, 16, true);
+            view.setUint16(20, 1, true);
+            view.setUint16(22, 1, true);
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, sampleRate * 2, true);
+            view.setUint16(32, 2, true);
+            view.setUint16(34, 16, true);
+            writeString(view, 36, 'data');
+            view.setUint32(40, bytes.length, true);
+            const blob = new Blob([view, bytes], { type: 'audio/wav' });
+            return URL.createObjectURL(blob);
+        };
+
+        // --- 系統提示詞 ---
+        const BASE_SYSTEM_PROMPT = `
+# Role
+你是一位兼具 20 年教學經驗的資深華語教師與創意編劇。
+
+# Core Philosophy
+1. **拒絕僵硬**：避免像翻譯機一樣的生硬語句。
+2. **生活化**：依照情境加入「語氣詞」（喔、啊、啦）與「具體細節」。
+3. **分級精準**：嚴格遵守 TOCFL/CEFR 等級限制。
+`;
+
+        const TUTOR_SYSTEM_PROMPT = `
+# Role
+你是一位親切、有耐心且充滿鼓勵的 AI 華語助教。你的名字叫「小華」。
+
+# Task
+回答學生關於華語學習的問題。
+
+# Guidelines
+1. **情境感知**：如果使用者有提供當前的學習文本，請優先根據該文本回答（例如解釋文中的語法、單字）。
+2. **教學風格**：
+   - 使用繁體中文。
+   - 解釋要清晰易懂，適合學生的等級。
+   - 多給予鼓勵（例如：「這個問題問得很好！」、「加油！」）。
+   - 適當使用 Emoji 增加親切感 😊。
+3. **功能限制**：如果學生要求寫代碼或與華語學習無關的事，請禮貌地將話題引導回華語學習。
+`;
+
+        // --- 配置數據 ---
+        const THEMES = [
+            { id: 'daily', icon: '☀️', name: '日常生活', scenarios: ['打招呼', '時間', '天氣', '買東西', '看醫生', '理髮', '找朋友'] },
+            { id: 'food', icon: '🍜', name: '飲食文化', scenarios: ['點餐', '推薦美食', '吃火鍋', '包餃子', '食材介紹', '菜單詢問', '用餐禮儀'] },
+            { id: 'transport', icon: '🚌', name: '交通出行', scenarios: ['問路', '搭公車', '買票', '訂房', '過海關', '租車', '遲到道歉'] },
+            { id: 'work', icon: '💼', name: '工作職場', scenarios: ['面試', '自我介紹', '開會', '提案', '電話', '報告', '請假'] },
+            { id: 'leisure', icon: '🎮', name: '休閒娛樂', scenarios: ['看電影', '唱歌', '旅遊', '打球', '玩遊戲', '興趣介紹', '週末計畫'] },
+        ];
+
+        const LEVELS = ['A1 入門', 'A2 初級', 'B1 中級', 'B2 中高級', 'C1 高級', 'C2 精通'];
+
+        const MODES = [
+            { id: 'narrative', name: '情境敘述', desc: '描述當下發生的事情' },
+            { id: 'experience', name: '經驗分享', desc: '講述過去的經歷' },
+            { id: 'suggestion', name: '實用建議', desc: '提供建議與指示' },
+        ];
+
+        const REWRITE_OPTIONS = [
+            { id: 'easier', name: '更簡單 (A1/A2)', desc: '降低難度，使用基礎詞彙' },
+            { id: 'harder', name: '更深入 (C1/C2)', desc: '增加成語與修辭' },
+            { id: 'colloquial', name: '超道地口語', desc: '加入台灣在地語助詞' },
+            { id: 'formal', name: '正式書面語', desc: '適合職場與新聞報導' },
+        ];
+
+        const QA_TYPES = [
+            { id: 'reading', name: '閱讀理解 (選擇題)', desc: '測試對文章內容的掌握' },
+            { id: 'true_false', name: '是非題判斷', desc: '快速檢核觀念正確性' },
+            { id: 'vocab', name: '詞彙運用測驗', desc: '測試文中關鍵詞的含義與用法' },
+        ];
+
+        const TUTOR_SUGGESTIONS = [
+            { label: '🧐 分析這篇文章的語法重點', prompt: '請分析這篇文本中出現的關鍵語法點，並舉例說明。' },
+            { label: '📝 列出值得學習的詞彙', prompt: '請列出這篇文本中難度較高或實用的 5 個詞彙，並附上拼音與解釋。' },
+            { label: '🌏 有什麼相關的文化背景？', prompt: '這篇文本的情境有沒有什麼台灣特有的文化背景或習慣需要注意？' },
+            { label: '🗣️ 如何用更道地的方式說？', prompt: '這段話有沒有更口語、更像台灣人的說法？' },
+        ];
+
+        // --- 多模態情境學習數據 ---
+        const SCENARIO_PROMPTS = [
+            { icon: '🍜', name: '夜市情境 (殺價)', theme: '購物消費', scenario: '夜市殺價' },
+            { icon: '🚇', name: '捷運站 (問路)', theme: '交通出行', scenario: '捷運站問路' },
+            { icon: '🏥', name: '醫院櫃檯 (掛號)', theme: '醫療保健', scenario: '醫院櫃檯掛號' },
+            { icon: '💼', name: '辦公室會議 (提案)', theme: '工作職場', scenario: '會議提案' },
+            { icon: '🛂', name: '移民署辦理居留證', theme: '日常生活', scenario: '辦理居留證' },
+            { icon: '🏦', name: '銀行櫃檯開戶', theme: '日常生活', scenario: '銀行櫃檯開戶' },
+            { icon: '📦', name: '便利商店問包裹', theme: '日常生活', scenario: '便利店取包裹' },
+            { icon: '🏫', name: '校園行政處詢問學費', theme: '日常生活', scenario: '校園詢問學費' }
+        ];
+
+        
+        // --- V2.0 模擬內容庫：確保體驗版有大量且智能的輸出 ---
+        const MOCK_CONTENT_BANK = {
+            '日常生活': {
+                '看醫生': {
+                    'A1': {
+                        narrative: {
+                            content: '我肚子痛。昨天吃了冰。今天早上去看醫生。醫生說要吃藥。我現在好多了。',
+                            analysis: '文本僅使用最基礎的主謂賓結構，詞彙為高頻日常用詞。',
+                            keywords: ['肚子痛', '吃冰', '醫生', '吃藥']
+                        },
+                        suggestion: {
+                            content: '如果你肚子痛，你應該去看醫生。要多喝熱水。不要再吃冰了。',
+                            analysis: '使用簡單的「應該」和「不要」進行建議，句式短小。',
+                            keywords: ['應該', '熱水', '不要']
+                        }
+                    },
+                    'C1': {
+                        narrative: {
+                            content: '鑒於昨日晚餐過度攝取生冷食物，今早腹部即出現劇烈絞痛。隨即前往診所求診。經醫師嚴謹問診與診斷後，囑咐須服用消炎藥，並強調日常飲食應力求清淡，方能避免病況復發。',
+                            analysis: '使用「鑒於」、「過度攝取」、「劇烈」、「囑咐」、「嚴謹問診」等正式書面語和複合句，展現高級語氣。',
+                            keywords: ['鑒於', '攝取', '劇烈絞痛', '求診', '力求清淡']
+                        },
+                        suggestion: {
+                            content: '針對頻發的腸胃不適症狀，筆者建議您應當審慎評估個人的飲食習慣。不妨從戒除生冷、辛辣等刺激性食物著手，並養成定時定量、細嚼慢嚥的良好習慣，這是維持消化系統健康的長久之計。',
+                            analysis: '運用「筆者建議」、「審慎評估」、「長久之計」等複雜表達，體現深度分析與正式建議的句型。',
+                            keywords: ['審慎評估', '戒除', '辛辣', '細嚼慢嚥', '長久之計']
+                        }
+                    }
+                },
+                '買東西': {
+                    'A1': {
+                        narrative: {
+                            content: '我要買咖啡。請問多少錢？給我一杯大杯的。謝謝。錢給你。',
+                            analysis: '純粹的交易對話，句尾多為問句和祈使句。',
+                            keywords: ['咖啡', '多少錢', '大杯', '謝謝']
+                        },
+                        suggestion: {
+                            content: '如果你想省錢，你可以去便利商店買咖啡。那裡比較便宜。',
+                            analysis: '使用「想...可以...」的建議句式。',
+                            keywords: ['省錢', '便利商店', '便宜']
+                        }
+                    },
+                    'C1': {
+                        narrative: {
+                            content: '在琳瑯滿目的精品店裡，消費者正躊躇不決於購買限量款手錶。店員以專業的語氣詳盡地介紹其功能與保值性，最終促使顧客簽下高額帳單。這場景體現了高消費市場的精緻行銷學。',
+                            analysis: '使用了大量描述性與抽象詞彙，句型複雜，適用於職場或商業情境。',
+                            keywords: ['琳瑯滿目', '躊躇不決', '限量款', '保值性', '精緻行銷學']
+                        },
+                        suggestion: {
+                            content: '當您面對高單價商品的消費決策時，務必保持理性，進行全面的市場調查。謹慎考量其效用與個人財務狀況是否匹配，方能避免不必要的衝動性消費。',
+                            analysis: '運用「務必保持理性」、「謹慎考量」、「衝動性消費」等複雜詞彙，提供正式的財務建議。',
+                            keywords: ['消費決策', '理性', '財務狀況', '衝動性消費']
+                        }
+                    }
+                }
+            },
+            '飲食文化': {
+                '吃火鍋': {
+                    'A1': {
+                        narrative: {
+                            content: '今天很冷。我們去吃火鍋。火鍋很好吃。我喜歡吃肉和菜。湯很燙，要小心。',
+                            analysis: '簡單描述天氣、活動和個人喜好。',
+                            keywords: ['火鍋', '吃肉', '很燙', '小心']
+                        },
+                        suggestion: {
+                            content: '吃火鍋時，你可以點鴛鴦鍋。這樣就可以吃到兩種口味的湯底。別忘了要沾醬油。',
+                            analysis: '直接提供具體操作建議，使用「可以」、「別忘了」等句式。',
+                            keywords: ['鴛鴦鍋', '湯底', '沾醬油']
+                        }
+                    }
+                },
+            }
+        };
+        // 為了確保所有組合都有 mock data，未定義的組合會回退到 A1 來看醫生
+        const getMockContent = (themeName, scenarioName, levelCode, modeId) => {
+            const level = levelCode.split(' ')[0].slice(0, 2); // A1, B1, C1
+            
+            // 嘗試精確匹配 (主題 -> 情境 -> 等級)
+            const contentBlock = MOCK_CONTENT_BANK[themeName] 
+                                    && MOCK_CONTENT_BANK[themeName][scenarioName] 
+                                    && MOCK_CONTENT_BANK[themeName][scenarioName][level]
+                                    && MOCK_CONTENT_BANK[themeName][scenarioName][level][modeId];
+
+            if (contentBlock) {
+                return contentBlock;
+            }
+
+            // 回退到預設 A1 內容
+            return MOCK_CONTENT_BANK['日常生活']['看醫生']['A1']['narrative'];
+        };
+
+        // --- Mock Data Generators for Trial Mode ---
+
+        const generateMockText = (theme, scenario, level, mode) => {
+            const modeId = mode.id;
+            const levelCode = level.split(' ')[0]; // A1
+            
+            const baseContent = getMockContent(theme.name, scenario, levelCode, modeId);
+
+            // 增加難度區分度：C1級的模擬文本會更長
+            const complexityMultiplier = levelCode.startsWith('C') ? 1.5 : 1; 
+
+            // 隨機添加一些語氣詞來模擬自然語氣
+            const finalContent = baseContent.content
+                .replace('。', (Math.random() < 0.3 ? '啊！' : '。'))
+                .replace('。', (Math.random() < 0.4 ? '，你知道嗎？' : '。'));
+            
+            return {
+                content: `【體驗版模擬 - ${mode.name} / ${level}】\n情境：${scenario}\n\n${finalContent}`,
+                analysis: `【模擬 AI 分析】這段文本完全符合您所選的 ${level} 級要求。${baseContent.analysis}`,
+                suggestion: `這是在「體驗版」下生成的模擬結果。若您切換至「正式版」並提供 API Key，AI 將會根據您的設定即時生成更具創造性的文本。`,
+                keywords: baseContent.keywords.slice(0, Math.floor(baseContent.keywords.length * complexityMultiplier))
+            };
+        };
+
+        const generateMockRewrite = (originalText, mode) => {
+            let rewritten = originalText;
+            let analysis = "【模擬 AI 分析】在體驗版中，我們對文本進行了基礎替換。";
+
+            if (mode.id === 'colloquial') {
+                rewritten = originalText
+                    .replace(/([。！？])/, '喔！')
+                    .replace(/今天/g, '今仔日')
+                    .replace(/的/g, '欸')
+                    .replace(/請/g, '欸，');
+                analysis = "【模擬分析】改成了更口語的說法，加入了「喔」、「今仔日」和「欸」等台灣口語習慣（高模擬）。";
+            } else if (mode.id === 'harder') {
+                rewritten = originalText
+                    .replace(/很/g, '極度')
+                    .replace(/想/g, '渴望')
+                    .replace(/看/g, '審視')
+                    .replace(/吃/g, '享用') + "\n(請注意，這是極為正式的書面語版本。)";
+                analysis = "【模擬分析】使用了較為書面和專業的詞彙，提升了文本的正式度。句式更嚴謹。";
+            } else if (mode.id === 'easier') {
+                 rewritten = originalText
+                    .replace(/([，。！？])/g, '.')
+                    .replace(/因為/g, '所以')
+                    .replace(/一個/g, '一')
+                    .slice(0, 50) + '... (已簡化)';
+                analysis = "【模擬分析】文本被大幅縮短，並移除了所有複雜連接詞，句式極簡化。";
+            }
+            
+            return {
+                content: `【體驗版模擬改寫 - ${mode.name}】\n${rewritten}`,
+                analysis: analysis
+            };
+        };
+
+        const generateMockQA = (text, type) => {
+            const q1 = { id: 1, question: `根據文本內容，請判斷這段話主要發生在何種情境？`, options: ['A. 學校教室', 'B. 醫院或診所', 'C. 火車上', 'D. 逛百貨公司'], correctAnswer: 'B. 醫院或診所', explanation: '文本中提到了「醫生」和「吃藥」等關鍵詞，因此情境應在醫療場所。' };
+            const q2 = { id: 2, question: `(是非題) 文本的語氣是極度正式的書面語。`, options: ['正確', '錯誤'], correctAnswer: '錯誤', explanation: '即使是 C1 級的文本，其語氣也只是「正式」，並非極端書面語。' };
+            const q3 = { id: 3, question: `文中的「力求清淡」的「力求」是什麼意思？`, options: ['A. 用力尋找', 'B. 盡力做到', 'C. 缺乏力量', 'D. 想要罷工'], correctAnswer: 'B. 盡力做到', explanation: '「力求」意指盡最大的努力去達到某個目標或要求。' };
+
+            const baseQuestions = [q1, q2, q3];
+            
+            if (type.id === 'true_false') return baseQuestions.filter(q => q.options.length === 2);
+            if (type.id === 'vocab') return baseQuestions.filter(q => q.question.includes('詞') || q.question.includes('意思'));
+            return baseQuestions;
+        };
+
+        // --- Settings Modal Component (API Key Setting) - Moved Before Main Component ---
+        const SettingsModal = ({ isOpen, onClose, apiKey, onSave, appMode, setAppMode }) => {
+            const [inputKey, setInputKey] = useState(apiKey);
+            const [showKey, setShowKey] = useState(false);
+
+            useEffect(() => {
+                setInputKey(apiKey);
+            }, [apiKey, isOpen]);
+
+            if (!isOpen) return null;
+
+            return (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden zoom-in">
+                        <div className="bg-slate-800 p-4 flex items-center justify-between">
+                            <h3 className="text-white font-bold flex items-center gap-2">
+                                <Settings size={20} /> 系統設定
+                            </h3>
+                            <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
+                                <X size={24} />
+                            </button>
+                        </div>
+                        <div className="p-6">
+                            {/* App Mode Selector (for settings convenience) */}
+                            <div className="mb-6 pb-4 border-b border-slate-200">
+                                <label className="block text-sm font-semibold text-slate-700 mb-2 flex items-center gap-2">
+                                    <Globe size={16} className="text-blue-500"/> 應用程式模式
+                                </label>
+                                <div className="flex gap-2">
+                                    <button 
+                                        onClick={() => setAppMode('trial')}
+                                        className={`flex-1 py-2 rounded-lg text-sm font-bold transition-colors ${appMode === 'trial' ? 'bg-orange-500 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
+                                    >
+                                        體驗版 (免費)
+                                    </button>
+                                    <button 
+                                        onClick={() => setAppMode('official')}
+                                        className={`flex-1 py-2 rounded-lg text-sm font-bold transition-colors ${appMode === 'official' ? 'bg-blue-500 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
+                                    >
+                                        正式版 (API Key)
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* API Key Input */}
+                            <div className="mb-6">
+                                <label className="block text-sm font-semibold text-slate-700 mb-2 flex items-center gap-2">
+                                    <Key size={16} className="text-orange-500"/> Google Gemini API Key
+                                </label>
+                                <p className="text-xs text-slate-500 mb-3 leading-relaxed">
+                                    啟用「正式版」模式需要 API Key。
+                                </p>
+                                <div className="relative">
+                                    <input 
+                                        type={showKey ? "text" : "password"}
+                                        value={inputKey}
+                                        onChange={(e) => setInputKey(e.target.value)}
+                                        className="w-full pl-4 pr-10 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-200 focus:border-orange-500 outline-none transition-all font-mono text-sm"
+                                        placeholder="貼上您的 API Key..."
+                                    />
+                                    <button 
+                                        onClick={() => setShowKey(!showKey)}
+                                        className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600"
+                                    >
+                                        {showKey ? <EyeOff size={16} /> : <Eye size={16} />}
+                                    </button>
+                                </div>
+                                <div className="mt-2 text-right">
+                                    <a href="https://aistudio.google.com/app/apikey" target="_blank" className="text-xs text-blue-500 hover:underline flex items-center justify-end gap-1">
+                                        取得 API Key <span className="text-[10px]">↗</span>
+                                    </a>
+                                </div>
+                            </div>
+                            
+                            <div className="flex gap-3">
+                                <button 
+                                    onClick={() => {
+                                        setInputKey('');
+                                        onSave('');
+                                        onClose();
+                                    }}
+                                    className="flex-1 py-2 px-4 border border-red-200 text-red-600 rounded-lg hover:bg-red-50 font-medium transition-colors"
+                                >
+                                    清除 Key
+                                </button>
+                                <button 
+                                    onClick={() => {
+                                        onSave(inputKey);
+                                        onClose();
+                                    }}
+                                    className="flex-[2] py-2 px-4 bg-orange-500 text-white rounded-lg hover:bg-orange-600 font-bold shadow-lg shadow-orange-200 transition-colors flex items-center justify-center gap-2"
+                                >
+                                    <Save size={18} /> 儲存並套用
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- Main Component ---
+        function ChineseLearningApp() {
+            // API Key & Mode State (V2.0)
+            const [apiKey, setApiKey] = useState(() => localStorage.getItem('hua_yu_api_key') || '');
+            const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+            const [appMode, setAppMode] = useState(() => localStorage.getItem('hua_yu_app_mode') || 'trial'); // trial or official
+
+            const [activeTab, setActiveTab] = useState('generate');
+            const [activeTheme, setActiveTheme] = useState(THEMES[0]);
+            const [activeScenario, setActiveScenario] = useState(THEMES[0].scenarios[4]); 
+            const [selectedLevel, setSelectedLevel] = useState(LEVELS[2]);
+            const [selectedMode, setSelectedMode] = useState(MODES[0]);
+            
+            // Rewrite State
+            const [rewriteOption, setRewriteOption] = useState(REWRITE_OPTIONS[2]);
+            const [customRewritePrompt, setCustomRewritePrompt] = useState('');
+            const [originalText, setOriginalText] = useState(null);
+            const [isComparing, setIsComparing] = useState(false);
+
+            // QA State
+            const [qaType, setQaType] = useState(QA_TYPES[0]);
+            const [userAnswers, setUserAnswers] = useState({});
+            const [showTeacherMode, setShowTeacherMode] = useState(false);
+
+            // AI Tutor State
+            const [chatHistory, setChatHistory] = useState([
+                { role: 'model', text: '你好！我是你的 AI 華語助教小華 😊。有什麼我可以幫你的嗎？' }
+            ]);
+            const [chatInput, setChatInput] = useState('');
+            const chatEndRef = useRef(null);
+
+            // UI State
+           // 修改：只有螢幕夠寬時才預設開啟，手機預設關閉
+const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth >= 1024);
+            const [fabOpen, setFabOpen] = useState(false);
+
+            // Data State
+            const [generatedText, setGeneratedText] = useState(null);
+            const [generatedMeta, setGeneratedMeta] = useState(null);
+            const [qaData, setQaData] = useState(null);
+            const [multimodalData, setMultimodalData] = useState({ image: null, audio: null });
+            // Multimodal Scenario Selection
+            const [selectedMultimodalScenario, setSelectedMultimodalScenario] = useState(null);
+
+
+            const [loadingState, setLoadingState] = useState({
+                generate: false, rewrite: false, qa: false, image: false, audio: false, chat: false, mms: false
+            });
+            const [errorMsg, setErrorMsg] = useState(null);
+
+            // --- Effects & Handlers ---
+
+            // Save Mode Handler
+            useEffect(() => {
+                localStorage.setItem('hua_yu_app_mode', appMode);
+            }, [appMode]);
+
+            // Scroll chat to bottom
+            useEffect(() => {
+                chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+            }, [chatHistory, activeTab]);
+
+            // Save API Key Handler
+            const handleSaveApiKey = (key) => {
+                setApiKey(key);
+                localStorage.setItem('hua_yu_api_key', key);
+            };
+
+            // Check API Key Helper (V2.0 Logic)
+            const checkApiKey = (isAPIFunction = true) => {
+                if (appMode === 'trial') {
+                    setErrorMsg(null);
+                    return true;
+                }
+                
+                if (appMode === 'official' && isAPIFunction && (!apiKey || apiKey.trim() === '')) {
+                    setIsSettingsOpen(true);
+                    setErrorMsg("您已選擇【正式版】。請先設定您的 Google Gemini API Key 才能使用 AI 功能。");
+                    return false;
+                }
+                setErrorMsg(null);
+                return true;
+            };
+            
+            // --- API Handlers (V2.0 Refactored) ---
+
+            const handleGenerate = async () => {
+                if (!checkApiKey()) return;
+                setLoadingState(prev => ({ ...prev, generate: true }));
+                setErrorMsg(null);
+                setQaData(null);
+                setMultimodalData({ image: null, audio: null });
+                setOriginalText(null);
+                setIsComparing(false);
+                setSelectedMultimodalScenario(null); // Clear M M Scenario context
+                
+                await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate loading time
+
+                if (appMode === 'trial') {
+                    const result = generateMockText(activeTheme, activeScenario, selectedLevel, selectedMode);
+                    setGeneratedText(result.content);
+                    setGeneratedMeta(result);
+                    setChatHistory(prev => [...prev, { role: 'model', text: `【體驗版】已為你生成模擬教材。請切換至正式版以獲得即時 AI 生成內容！` }]);
+                } else { // Official Mode (Actual API Call)
+                    const userPrompt = `請為我創作一份華語教材：- 主題：${activeTheme.name} - 情境：${activeScenario} - 程度：${selectedLevel} - 句型模式：${selectedMode.name} - 要求：必須有具體的微型背景故事，語氣非常自然生活化。`;
+                    try {
+                        const generationConfig = { 
+                            temperature: 0.9, 
+                            responseMimeType: "application/json", 
+                            responseSchema: { 
+                                type: "OBJECT", 
+                                properties: { 
+                                    content: { type: "STRING" }, 
+                                    analysis: { type: "STRING" }, 
+                                    keywords: { type: "ARRAY", items: { type: "STRING" } } 
+                                } 
+                            } 
+                        };
+
+                        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                contents: [{ parts: [{ text: userPrompt }] }],
+                                systemInstruction: { parts: [{ text: BASE_SYSTEM_PROMPT }] },
+                                generationConfig: generationConfig
+                            })
+                        });
+
+                        if (!response.ok) throw new Error("API 請求失敗，請檢查 Key 是否正確或額度是否足夠");
+                        const data = await response.json();
+                        const result = JSON.parse(data.candidates[0].content.parts[0].text);
+                        setGeneratedText(result.content);
+                        setGeneratedMeta(result);
+                        setChatHistory(prev => [...prev, { role: 'model', text: `我已經根據「${activeScenario}」為你生成了新的教材。需要我為你解說其中的重點嗎？` }]);
+                    } catch (err) {
+                        setErrorMsg(err.message || "生成失敗，請檢查網路連線。");
+                    }
+                }
+                setLoadingState(prev => ({ ...prev, generate: false }));
+            };
+
+            const handleRewrite = async () => {
+                if (!checkApiKey()) return;
+                if (!generatedText) return;
+                setLoadingState(prev => ({ ...prev, rewrite: true }));
+
+                await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate loading time
+
+                if (!originalText) setOriginalText(generatedText);
+
+                if (appMode === 'trial') {
+                    const result = generateMockRewrite(generatedText, rewriteOption);
+                    setGeneratedText(result.content);
+                    setGeneratedMeta(prev => ({ ...prev, analysis: result.analysis }));
+                } else { // Official Mode
+                    const specificInstruction = customRewritePrompt.trim() 
+                        ? `特別指令：${customRewritePrompt}` 
+                        : `改寫目標：【${rewriteOption.name}】`;
+                    const rewritePrompt = `請改寫以下文本：原文："${generatedText}" ${specificInstruction} 要求：1. 保留原意，但語氣與用詞需完全符合新的目標設定。2. 請在 analysis 中列出具體的改寫重點。`;
+
+                    try {
+                        const generationConfig = { 
+                            temperature: 0.8, 
+                            responseMimeType: "application/json", 
+                            responseSchema: { 
+                                type: "OBJECT", 
+                                properties: { 
+                                    content: { type: "STRING" }, 
+                                    analysis: { type: "STRING", description: "改寫重點分析" } 
+                                } 
+                            } 
+                        };
+
+                        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                contents: [{ parts: [{ text: rewritePrompt }] }],
+                                systemInstruction: { parts: [{ text: BASE_SYSTEM_PROMPT }] },
+                                generationConfig: generationConfig
+                            })
+                        });
+                        if (!response.ok) throw new Error("API Error");
+                        const data = await response.json();
+                        const result = JSON.parse(data.candidates[0].content.parts[0].text);
+                        setGeneratedText(result.content);
+                        setGeneratedMeta(prev => ({ ...prev, analysis: result.analysis }));
+                    } catch (err) {
+                        setErrorMsg("改寫失敗");
+                    }
+                }
+                setQaData(null); 
+                setLoadingState(prev => ({ ...prev, rewrite: false }));
+            };
+
+            const handleQA = async () => {
+                if (!checkApiKey()) return;
+                if (!generatedText) return;
+                setLoadingState(prev => ({ ...prev, qa: true }));
+                setUserAnswers({});
+                setShowTeacherMode(false);
+
+                await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate loading time
+
+                if (appMode === 'trial') {
+                    const result = generateMockQA(generatedText, qaType);
+                    setQaData(result);
+                } else { // Official Mode
+                    let promptConstraint = "";
+                    if (qaType.id === 'true_false') promptConstraint = "設計 3 題是非題。選項固定為 ['正確', '錯誤']。";
+                    else if (qaType.id === 'vocab') promptConstraint = "設計 3 題詞彙選擇題，針對文中的難詞或關鍵詞進行測試。";
+                    else promptConstraint = "設計 3 題閱讀理解選擇題。";
+
+                    const qaPrompt = `請根據以下文本設計測驗：文本："${generatedText}" 程度：${selectedLevel} 題型：${qaType.name} 要求：1. ${promptConstraint} 2. 每個題目包含 id, question, options (陣列), correctAnswer (正確選項的文字內容), explanation (詳解)。`;
+
+                    try {
+                        const responseSchema = { 
+                            type: "OBJECT", 
+                            properties: { 
+                                questions: { 
+                                    type: "ARRAY", 
+                                    items: { 
+                                        type: "OBJECT", 
+                                        properties: { 
+                                            id: { type: "INTEGER" }, 
+                                            question: { type: "STRING" }, 
+                                            options: { type: "ARRAY", items: { type: "STRING" } }, 
+                                            correctAnswer: { type: "STRING" }, 
+                                            explanation: { type: "STRING" } 
+                                        } 
+                                    } 
+                                } 
+                            } 
+                        };
+
+                        const generationConfig = { 
+                            responseMimeType: "application/json", 
+                            responseSchema: responseSchema
+                        };
+
+                        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                contents: [{ parts: [{ text: qaPrompt }] }],
+                                generationConfig: generationConfig
+                            })
+                        });
+
+                        if (!response.ok) throw new Error("API Error");
+                        const data = await response.json();
+                        const result = JSON.parse(data.candidates[0].content.parts[0].text);
+                        setQaData(result.questions);
+                    } catch (err) {
+                        setErrorMsg("QA 生成失敗");
+                    }
+                }
+                setLoadingState(prev => ({ ...prev, qa: false }));
+            };
+
+            // 視覺方面的學習: 圖像生成 API (Imagen)
+            const handleImageGen = async () => {
+                if (!checkApiKey()) return;
+                if (!generatedText) return;
+                setLoadingState(prev => ({ ...prev, image: true }));
+
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                if (appMode === 'trial') {
+                    setMultimodalData(prev => ({ ...prev, image: "https://placehold.co/400x300/e0f2f7/000000?text=Trial+Image+Placeholder" }));
+                } else { // Official Mode
+                    const imgPrompt = `A warm, educational style illustration of: ${activeTheme.name}, ${activeScenario}. Flat vector art, soft colors, minimal background.`;
+                    try {
+                        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${apiKey}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ instances: [{ prompt: imgPrompt }], parameters: { sampleCount: 1 } })
+                        });
+                        if (!response.ok) throw new Error("API Error");
+                        const data = await response.json();
+                        if (data.predictions?.[0]) {
+                            setMultimodalData(prev => ({ ...prev, image: `data:image/png;base64,${data.predictions[0].bytesBase64Encoded}` }));
+                        }
+                    } catch (err) { setErrorMsg("圖像生成失敗"); }
+                }
+                setLoadingState(prev => ({ ...prev, image: false }));
+            };
+
+            // 動態方面的學習: 語音生成 API (TTS)
+            const handleAudioGen = async () => {
+                if (!checkApiKey()) return;
+                if (!generatedText) return;
+                setLoadingState(prev => ({ ...prev, audio: true }));
+
+                await new Promise(resolve => setTimeout(resolve, 1500));
+
+                if (appMode === 'trial') {
+                    setMultimodalData(prev => ({ ...prev, audio: null }));
+                    setErrorMsg("體驗版無法播放語音，請切換至正式版。");
+                } else { // Official Mode
+                    try {
+                        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                contents: [{ parts: [{ text: generatedText }] }],
+                                generationConfig: { responseModalities: ["AUDIO"], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: "Aoede" } } } }
+                            })
+                        });
+                        if (!response.ok) throw new Error("API Error");
+                        const data = await response.json();
+                        if (data.candidates?.[0]?.content?.parts?.[0]?.inlineData) {
+                            setMultimodalData(prev => ({ ...prev, audio: pcmToWav(data.candidates[0].content.parts[0].inlineData.data) }));
+                        }
+                    } catch (err) { setErrorMsg("語音生成失敗"); }
+                }
+                setLoadingState(prev => ({ ...prev, audio: false }));
+            };
+            
+            // 多模態情境學習 (Image-to-Text) 處理器
+            const handleMultimodalScenario = async (scenarioItem) => {
+                if (!checkApiKey()) return;
+                setLoadingState(prev => ({ ...prev, mms: true }));
+                setErrorMsg(null);
+                setGeneratedText(null);
+                setSelectedMultimodalScenario(scenarioItem);
+                
+                await new Promise(resolve => setTimeout(resolve, 1500)); 
+
+                if (appMode === 'trial') {
+                     const result = generateMockMultimodalScenario(scenarioItem);
+                     setGeneratedText(result.content);
+                     setGeneratedMeta(prev => ({ ...prev, analysis: result.analysis, keywords: result.keywords }));
+                } else { // Official Mode (Simulated Image-to-Text)
+                    // We simulate the Image-to-Text by using the scenario name as a rich prompt.
+                    const userPrompt = `請根據以下情境名稱，生成一篇詳細的視覺觀察和對話內容，並設定為 B1 中級等級：【${scenarioItem.name}】。內容必須包含場景描述和至少兩個人物的對話。`;
+                    try {
+                        const generationConfig = { 
+                            temperature: 0.8, 
+                            responseMimeType: "application/json", 
+                            responseSchema: { 
+                                type: "OBJECT", 
+                                properties: { 
+                                    content: { type: "STRING" }, 
+                                    analysis: { type: "STRING" }, 
+                                    keywords: { type: "ARRAY", items: { type: "STRING" } } 
+                                } 
+                            } 
+                        };
+                        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                contents: [{ parts: [{ text: userPrompt }] }],
+                                systemInstruction: { parts: [{ text: BASE_SYSTEM_PROMPT }] },
+                                generationConfig: generationConfig
+                            })
+                        });
+
+                        if (!response.ok) throw new Error("API 請求失敗，請檢查 Key 是否正確或額度是否足夠");
+                        const data = await response.json();
+                        const result = JSON.parse(data.candidates[0].content.parts[0].text);
+                        setGeneratedText(`【多模態情境學習：${scenarioItem.name}】\n\n${result.content}`);
+                        setGeneratedMeta(prev => ({ ...prev, analysis: result.analysis, keywords: result.keywords }));
+
+                    } catch (err) {
+                        setErrorMsg(err.message || "情境內容生成失敗。");
+                    }
+                }
+                setLoadingState(prev => ({ ...prev, mms: false }));
+            };
+
+
+            const handleChatSend = async (messageText) => {
+                if (!checkApiKey(false)) return; // Chat is non-critical, only check key in official mode
+                const textToSend = messageText || chatInput;
+                if (!textToSend.trim()) return;
+
+                const newHistory = [...chatHistory, { role: 'user', text: textToSend }];
+                setChatHistory(newHistory);
+                setChatInput('');
+                setLoadingState(prev => ({ ...prev, chat: true }));
+
+                await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate loading time
+
+                let contextPrompt = "";
+                if (generatedText) {
+                    contextPrompt = `\n[當前學習文本 Context] (主題：${activeTheme.name} / 情境：${activeScenario})\n文本內容："""\n${generatedText}\n"""\n`;
+                }
+
+                if (appMode === 'trial') {
+                    const mockReply = `【體驗版助教模擬】你提出的問題非常好！${contextPrompt ? '針對你現在學習的文本，' : ''}我可以給你一個簡單的解釋。不過，如果切換到正式版，我可以提供更深入的語法分析喔！😊`;
+                    setChatHistory(prev => [...prev, { role: 'model', text: mockReply }]);
+                } else { // Official Mode
+                    try {
+                        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                contents: [{ parts: [{ text: contextPrompt + "\n使用者問題：" + textToSend }] }],
+                                systemInstruction: { parts: [{ text: TUTOR_SYSTEM_PROMPT }] }
+                            })
+                        });
+
+                        if (!response.ok) throw new Error("API Error");
+                        const data = await response.json();
+                        const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "抱歉，我現在有點忙，請稍後再試。";
+                        setChatHistory(prev => [...prev, { role: 'model', text: reply }]);
+                    } catch (err) {
+                        setChatHistory(prev => [...prev, { role: 'model', text: "連線錯誤，請檢查 Key 與網路。" }]);
+                    }
+                }
+                setLoadingState(prev => ({ ...prev, chat: false }));
+            };
+
+            const handleAnswerSelect = (qId, option) => {
+                if (showTeacherMode) return;
+                setUserAnswers(prev => ({ ...prev, [qId]: option }));
+            };
+
+            const switchTab = (tab) => {
+                setActiveTab(tab);
+                setFabOpen(false);
+            };
+
+            // Get Breadcrumb string
+            const breadcrumb = `首頁 > ${
+                activeTab === 'generate' ? '文本生成' : 
+                activeTab === 'rewrite' ? '智能改寫' : 
+                activeTab === 'qa' ? '智慧問答' :
+                activeTab === 'multimodal' ? '多模態學習' :
+                activeTab === 'ai_tutor' ? 'AI 助教' : '未知頁面'
+            } > ${activeTheme.name} > ${activeScenario}`;
+
+
+            return (
+                <div className="min-h-screen bg-slate-50 text-slate-800 font-sans flex flex-col">
+                    
+                    {/* Settings Modal */}
+                    <SettingsModal 
+                        isOpen={isSettingsOpen} 
+                        onClose={() => setIsSettingsOpen(false)}
+                        apiKey={apiKey}
+                        onSave={handleSaveApiKey}
+                        appMode={appMode}
+                        setAppMode={setAppMode}
+                    />
+
+                    {/* Header */}
+                    <header className="bg-white shadow-sm sticky top-0 z-50 border-b border-orange-100">
+                        <div className="max-w-[1600px] mx-auto px-4 h-16 flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                                <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 hover:bg-slate-100 rounded-lg lg:hidden">
+                                    <Menu size={24} className="text-slate-600" />
+                                </button>
+                                <div className="flex items-center gap-2">
+                                    <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center text-white font-bold text-xl">華</div>
+                                    <span className="text-xl font-bold tracking-tight text-slate-800">{/* 修改：手機版隱藏 '百寶箱' 三個字，只顯示 '華語AI' */}
+華語<span className="text-orange-500">AI</span><span className="hidden md:inline">百寶箱</span>
+
+{/* 回首頁按鈕 (React寫法) */}
+<a href="index.html" className="flex items-center gap-2 mr-4 text-slate-600 hover:text-orange-500 font-bold no-underline">
+    <span className="text-xl">🏠</span>
+    <span className="hidden md:inline">回首頁</span>
+</a>
+
+
+</span>
+                                </div>
+                            </div>
+                            <nav className="hidden lg:flex items-center gap-1">
+                                {[
+                                    { id: 'generate', icon: PenTool, label: '文本生成' }, 
+                                    { id: 'rewrite', icon: RefreshCw, label: '智能改寫' }, 
+                                    { id: 'qa', icon: MessageCircle, label: '智慧問答' }, 
+                                    { id: 'multimodal', icon: Headphones, label: '多模態' },
+                                    { id: 'ai_tutor', icon: GraduationCap, label: 'AI 助教' }
+                                ].map((item) => (
+                                    <button key={item.id} onClick={() => setActiveTab(item.id)} className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors ${activeTab === item.id ? 'bg-orange-50 text-orange-600 ring-1 ring-orange-200' : 'text-slate-600 hover:bg-slate-100'}`}>
+                                        <item.icon size={16} /> {item.label}
+                                    </button>
+                                ))}
+                            </nav>
+                            <div className="flex items-center gap-2">
+                                {/* Mode Indicator & Toggle */}
+                                <button 
+                                    onClick={() => setAppMode(appMode === 'trial' ? 'official' : 'trial')}
+                                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                                        appMode === 'trial' 
+                                            ? 'bg-orange-100 text-orange-700 hover:bg-orange-200' 
+                                            : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                                    }`}
+                                >
+                                    <Globe size={14} /> 
+                                    {appMode === 'trial' ? '體驗版' : '正式版'}
+                                </button>
+                                
+                                <button 
+                                    onClick={() => setIsSettingsOpen(true)}
+                                    className={`p-2 rounded-full transition-colors ${
+                                        appMode === 'official' && !apiKey
+                                            ? 'bg-red-50 text-red-500 animate-pulse' 
+                                            : 'text-slate-500 hover:text-blue-700 hover:bg-blue-50'
+                                    }`}
+                                    title="設定 API Key"
+                                >
+                                    <Settings size={20} />
+                                </button>
+                                <button className="flex items-center gap-2 px-3 py-1.5 bg-slate-800 text-white rounded-full hover:bg-slate-700 text-sm">
+                                    <User size={16} /> <span>登入</span>
+                                </button>
+                            </div>
+                        </div>
+                    </header>
+
+                    {/* Main Layout */}
+                    
+                   <div className="flex flex-1 overflow-hidden max-w-[1600px] mx-auto w-full">
+                        {/* Sidebar */}
+                        <aside className={`fixed lg:static inset-y-0 left-0 z-40 w-64 bg-white border-r border-slate-200 transform transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:w-0 lg:opacity-0'}`}>
+                            <div className="p-4 border-b border-slate-100 bg-orange-50/50"><h2 className="text-sm font-bold text-orange-800 uppercase flex items-center gap-2"><Layout size={16} /> 主題情境</h2></div>
+                            <div className="flex-1 overflow-y-auto p-2 space-y-1">
+                                {THEMES.map((theme) => (
+                                    <div key={theme.id} className="rounded-lg overflow-hidden">
+                                        <button onClick={() => setActiveTheme(theme)} className={`w-full flex items-center justify-between p-3 text-left ${activeTheme.id === theme.id ? 'bg-blue-50 text-blue-800 font-medium' : 'text-slate-600 hover:bg-slate-50'}`}>
+                                            <span className="flex items-center gap-2">{theme.icon} {theme.name}</span>
+                                            {activeTheme.id === theme.id ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                                        </button>
+                                        {activeTheme.id === theme.id && (<div className="bg-slate-50 px-3 py-2 space-y-1">{theme.scenarios.map((scenario) => (<button key={scenario} onClick={() => setActiveScenario(scenario)} className={`w-full text-left px-3 py-2 text-sm rounded-md ${activeScenario === scenario ? 'bg-white shadow-sm text-orange-600 border-l-4 border-l-orange-500' : 'text-slate-500 hover:bg-slate-200'}`}>{scenario}</button>))}</div>)}
+                                    </div>
+                                ))}
+                            </div>
+                        </aside>
+
+                        {/* Workspace */}
+                        <main className="flex-1 overflow-y-auto bg-slate-50 p-4 lg:p-8 relative pb-24">
+                            {/* Breadcrumb */}
+                            <div className="flex items-center gap-2 text-sm text-slate-500 mb-6">
+                                {breadcrumb.split(' > ').map((item, index, array) => (
+                                    <React.Fragment key={index}>
+                                        <span className={`cursor-default ${index === array.length - 1 ? 'text-slate-700 font-medium' : 'hover:text-blue-600'}`}>
+                                            {item}
+                                        </span>
+                                        {index < array.length - 1 && <ChevronRight size={14} />}
+                                    </React.Fragment>
+                                ))}
+                            </div>
+
+                            <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 pb-20">
+                                <div className="xl:col-span-12 bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                                    
+                                    {/* Generate */}
+                                    {activeTab === 'generate' && (
+                                        <>
+                                            <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
+                                                <div className="p-2 bg-orange-100 rounded-lg text-orange-600"><PenTool size={24} /></div>
+                                                <div><h1 className="text-xl font-bold text-slate-800">智能文本生成</h1><p className="text-sm text-slate-500">選擇等級與模式開始創作</p></div>
+                                         </div>
+
+{/* === 手機版專用主題選擇器 (Page 1) === */}
+<div className="lg:hidden mb-6 p-4 bg-orange-50 rounded-xl border border-orange-100 animate-fade-in">
+    <div className="mb-4">
+        <label className="block text-xs font-bold text-orange-700 uppercase mb-2">1. 選擇主題</label>
+        <div className="relative">
+            <select 
+                value={activeTheme.id} 
+                onChange={(e) => {
+                    const theme = THEMES.find(t => t.id === e.target.value);
+                    setActiveTheme(theme);
+                    setActiveScenario(theme.scenarios[0]); 
+                }}
+                className="w-full p-3 rounded-lg border-orange-200 bg-white text-sm font-bold text-slate-700 focus:ring-2 focus:ring-orange-300 outline-none appearance-none shadow-sm"
+            >
+                {THEMES.map(t => <option key={t.id} value={t.id}>{t.icon} {t.name}</option>)}
+            </select>
+            <div className="absolute right-3 top-3 pointer-events-none text-orange-400">▼</div>
+        </div>
+    </div>
+    <div>
+        <label className="block text-xs font-bold text-orange-700 uppercase mb-2">2. 選擇情境</label>
+        <div className="flex flex-wrap gap-2">
+            {activeTheme.scenarios.map(s => (
+                <button 
+                    key={s} 
+                    onClick={() => setActiveScenario(s)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-all ${activeScenario === s ? 'bg-orange-500 text-white border-orange-500 shadow-md transform scale-105' : 'bg-white text-slate-600 border-orange-200 hover:border-orange-400'}`}
+                >
+                    {s}
+                </button>
+            ))}
+        </div>
+    </div>
+</div>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                                <div><label className="block text-sm font-semibold text-slate-700 mb-2">語言等級</label><div className="grid grid-cols-2 gap-2">{LEVELS.map((lvl) => (<button key={lvl} onClick={() => setSelectedLevel(lvl)} className={`px-2 py-2 text-xs rounded-lg border ${selectedLevel === lvl ? 'bg-blue-600 text-white' : 'hover:bg-slate-50'}`}>{lvl}</button>))}</div></div>
+                                                <div className="md:col-span-2"><label className="block text-sm font-semibold text-slate-700 mb-2">句型模式</label><div className="grid grid-cols-1 sm:grid-cols-3 gap-3">{MODES.map((mode) => (<button key={mode.id} onClick={() => setSelectedMode(mode)} className={`p-3 rounded-xl border text-left ${selectedMode.id === mode.id ? 'bg-orange-50 border-orange-400' : 'hover:bg-slate-50'}`}><div className="font-bold text-sm">{mode.name}</div><div className="text-xs text-slate-500">{mode.desc}</div></button>))}</div></div>
+                                            </div>
+                                            <div className="mt-6 flex justify-end"><button onClick={handleGenerate} disabled={loadingState.generate} className="px-8 py-3 rounded-xl font-bold text-white bg-gradient-to-r from-orange-500 to-orange-600 shadow-lg flex items-center gap-2 hover:opacity-90 disabled:opacity-50">{loadingState.generate ? <RefreshCw className="animate-spin" /> : <Zap />} {loadingState.generate ? '生成中...' : '立即生成文本'}</button></div>
+                                        </>
+                                    )}
+
+                                    {/* Rewrite */}
+                                    {activeTab === 'rewrite' && (
+                                        <>
+                                            <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
+                                                <div className="p-2 bg-green-100 rounded-lg text-green-600"><RefreshCw size={24} /></div>
+                                                <div><h1 className="text-xl font-bold text-slate-800">智能文本改寫</h1><p className="text-sm text-slate-500">自訂指令或選擇風格，並可對照差異</p></div>
+                                            </div>
+                                            {!generatedText ? (
+                                                <div className="text-center py-8 text-slate-400">請先在「文本生成」頁面產生內容。</div>
+                                            ) : (
+                                                <div className="space-y-4">
+                                                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                                        {REWRITE_OPTIONS.map((opt) => (
+                                                            <button key={opt.id} onClick={() => { setRewriteOption(opt); setCustomRewritePrompt(''); }} className={`p-3 rounded-xl border text-left transition-all ${rewriteOption.id === opt.id && !customRewritePrompt ? 'bg-green-50 border-green-500 ring-1 ring-green-500' : 'hover:bg-slate-50'}`}>
+                                                                <div className="font-bold text-slate-800 text-sm">{opt.name}</div>
+                                                                <div className="text-xs text-slate-500 mt-1">{opt.desc}</div>
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                    <div className="flex gap-2 items-center bg-slate-50 p-3 rounded-xl border border-slate-200">
+                                                        <PenTool size={18} className="text-slate-500" />
+                                                        <input type="text" placeholder="或者... 輸入您的自訂指令" className="flex-1 bg-transparent border-none outline-none text-sm text-slate-700 placeholder:text-slate-400" value={customRewritePrompt} onChange={(e) => setCustomRewritePrompt(e.target.value)} />
+                                                    </div>
+                                                    <div className="flex justify-between items-center mt-2">
+                                                        {originalText && (<button onClick={() => setIsComparing(!isComparing)} className={`flex items-center gap-2 text-sm px-3 py-1.5 rounded-lg border transition-colors ${isComparing ? 'bg-blue-100 text-blue-700 border-blue-200' : 'text-slate-600 hover:bg-slate-100'}`}><SplitSquareHorizontal size={16} /> {isComparing ? '關閉對照' : '開啟原文對照'}</button>)}
+                                                        <button onClick={handleRewrite} disabled={loadingState.rewrite} className="px-6 py-2 rounded-lg bg-green-600 text-white font-bold flex items-center gap-2 hover:bg-green-700 disabled:opacity-50 ml-auto">{loadingState.rewrite ? <RefreshCw className="animate-spin" /> : <RefreshCw />} 開始智能改寫</button>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </>
+                                    )}
+
+                                    {/* QA */}
+                                    {activeTab === 'qa' && (
+                                        <>
+                                            <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
+                                                <div className="p-2 bg-blue-100 rounded-lg text-blue-600"><MessageCircle size={24} /></div>
+                                                <div><h1 className="text-xl font-bold text-slate-800">智慧問答延伸</h1><p className="text-sm text-slate-500">選擇題型，自動生成互動式測驗</p></div>
+                                            </div>
+                                            {!generatedText ? <div className="text-center py-8 text-slate-400">請先在「文本生成」頁面產生內容。</div> : (
+                                                <div className="space-y-4">
+                                                    <div className="flex gap-2 flex-wrap">
+                                                        {QA_TYPES.map(type => (
+                                                            <button key={type.id} onClick={() => setQaType(type)} className={`flex-1 px-4 py-3 rounded-xl border text-left transition-all ${qaType.id === type.id ? 'bg-blue-50 border-blue-500 ring-1 ring-blue-500' : 'hover:bg-slate-50'}`}>
+                                                                <div className="font-bold text-slate-800 text-sm">{type.name}</div>
+                                                                <div className="text-xs text-slate-500 mt-1">{type.desc}</div>
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                    <div className="flex justify-end mt-2"><button onClick={handleQA} disabled={loadingState.qa} className="px-6 py-2 rounded-lg bg-blue-600 text-white font-bold flex items-center gap-2 hover:bg-blue-700 disabled:opacity-50">{loadingState.qa ? <RefreshCw className="animate-spin" /> : <Bot />} 生成測驗</button></div>
+                                                </div>
+                                            )}
+                                        </>
+                                    )}
+
+                                    {/* Multimodal */}
+                                    {activeTab === 'multimodal' && (
+                                        <>
+                                            <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
+                                                <div className="p-2 bg-purple-100 rounded-lg text-purple-600"><Headphones size={24} /></div>
+                                                <div><h1 className="text-xl font-bold text-slate-800">多模態學習中心</h1><p className="text-sm text-slate-500">整合視覺、動態、情境分析等多元學習資源</p></div>
+                                            </div>
+                                            
+                                            <div className="space-y-6">
+                                                
+                                                {/* 區塊 1: 視覺與動態學習 (Visual & Dynamic) */}
+                                                <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                                                    <h2 className="text-md font-bold text-slate-700 mb-4 flex items-center gap-2"><Sparkles size={16}/> 視覺與動態學習</h2>
+                                                    {!generatedText ? <div className="text-center py-4 text-slate-400">請先在「文本生成」頁面產生內容，才能生成配圖與語音。</div> : (
+                                                        <div className="flex gap-4 flex-wrap">
+                                                            <button onClick={handleImageGen} disabled={loadingState.image} className="flex-1 min-w-[200px] py-3 rounded-xl bg-purple-50 hover:bg-purple-100 flex flex-col items-center justify-center gap-2 text-purple-700 transition-colors border border-purple-200">
+                                                                {loadingState.image ? <RefreshCw className="animate-spin" /> : <ImageIcon size={32} />} 
+                                                                <span className="font-bold">視覺方面的學習 (生成插圖)</span>
+                                                            </button>
+                                                            <button onClick={handleAudioGen} disabled={loadingState.audio} className="flex-1 min-w-[200px] py-3 rounded-xl bg-pink-50 hover:bg-pink-100 flex flex-col items-center justify-center gap-2 text-pink-700 transition-colors border border-pink-200">
+                                                                {loadingState.audio ? <RefreshCw className="animate-spin" /> : <Volume2 size={32} />} 
+                                                                <span className="font-bold">動態方面的學習 (生成語音)</span>
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                {/* 區塊 2: 多模態情境學習 (Image-to-Text) */}
+                                                <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                                                    <h2 className="text-md font-bold text-slate-700 mb-4 flex items-center gap-2"><ImageIcon size={16}/> 多模態情境學習 (Image-to-Text)</h2>
+                                                    <p className="text-sm text-slate-500 mb-4">點擊下方情境，AI 將為您**生成** (或模擬生成) 對應的豐富學習文本：</p>
+                                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                                        {SCENARIO_PROMPTS.map((item, index) => (
+                                                            <button 
+                                                                key={index}
+                                                                onClick={() => handleMultimodalScenario(item)}
+                                                                disabled={loadingState.mms}
+                                                                className={`p-3 rounded-xl border text-left transition-all shadow-sm ${
+                                                                    selectedMultimodalScenario?.name === item.name 
+                                                                        ? 'bg-blue-100 border-blue-400 ring-2 ring-blue-300' 
+                                                                        : 'bg-white border-slate-200 hover:bg-slate-100'
+                                                                } disabled:opacity-60`}
+                                                            >
+                                                                <span className="text-lg mr-1">{item.icon}</span> 
+                                                                <div className="font-bold text-sm text-slate-800">{item.name}</div>
+                                                                <div className="text-xs text-slate-500">{item.theme}</div>
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                    {loadingState.mms && <div className="mt-4 text-center text-blue-500 font-medium flex items-center justify-center gap-2"><RefreshCw size={16} className="animate-spin"/> 正在生成情境文本...</div>}
+
+                                                </div>
+                                            </div>
+                                        </>
+                                    )}
+
+                                    {/* AI Tutor */}
+                                    {activeTab === 'ai_tutor' && (
+                                        <div className="flex flex-col h-[600px] relative">
+                                            <div className="flex items-center gap-3 mb-4 pb-4 border-b border-slate-100">
+                                                <div className="p-2 bg-amber-100 rounded-lg text-amber-600"><GraduationCap size={24} /></div>
+                                                <div><h1 className="text-xl font-bold text-slate-800">AI 智能助教</h1><p className="text-sm text-slate-500">有任何華語學習的問題，都可以問我喔！</p></div>
+                                            </div>
+                                            <div className="flex-1 overflow-y-auto pr-2 space-y-4 mb-4">
+                                                {chatHistory.map((msg, idx) => (
+                                                    <div key={idx} className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
+                                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${msg.role === 'user' ? 'bg-slate-700 text-white' : 'bg-amber-100 text-amber-700'}`}>{msg.role === 'user' ? <UserCircle2 size={20} /> : <Bot size={20} />}</div>
+                                                        <div className={`p-3 rounded-2xl max-w-[80%] text-sm leading-relaxed ${msg.role === 'user' ? 'bg-slate-700 text-white rounded-tr-none' : 'bg-slate-100 text-slate-800 rounded-tl-none'}`}>{msg.text}</div>
+                                                    </div>
+                                                ))}
+                                                {loadingState.chat && (<div className="flex gap-3"><div className="w-8 h-8 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center"><Bot size={20} /></div><div className="p-3 rounded-2xl bg-slate-100 text-slate-500 text-sm flex items-center gap-2"><RefreshCw size={14} className="animate-spin"/> 助教思考中...</div></div>)}
+                                                <div ref={chatEndRef} />
+                                            </div>
+                                            {generatedText && (
+                                                <div className="mb-4">
+                                                    <div className="text-xs font-bold text-slate-400 mb-2 uppercase tracking-wide flex items-center gap-1"><Sparkles size={12}/> 針對當前文本的快捷提問</div>
+                                                    <div className="flex gap-2 flex-wrap">
+                                                        {TUTOR_SUGGESTIONS.map((sug, idx) => (<button key={idx} onClick={() => handleChatSend(sug.prompt)} disabled={loadingState.chat} className="text-xs px-3 py-1.5 bg-white border border-slate-200 hover:border-amber-300 hover:bg-amber-50 text-slate-600 rounded-full transition-colors shadow-sm">{sug.label}</button>))}
+                                                    </div>
+                                                </div>
+                                            )}
+                                            <div className="mt-auto flex items-center gap-2 bg-white p-2 rounded-xl border border-slate-200 shadow-sm focus-within:ring-2 focus-within:ring-amber-200 focus-within:border-amber-400 transition-all">
+                                                <input type="text" className="flex-1 bg-transparent border-none outline-none text-sm px-2 py-1" placeholder="輸入您的問題..." value={chatInput} onChange={(e) => setChatInput(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && handleChatSend()} />
+                                                <button onClick={() => handleChatSend()} disabled={loadingState.chat || !chatInput.trim()} className="p-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 disabled:opacity-50 transition-colors"><Send size={18} /></button>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {errorMsg && <div className="mt-4 p-3 bg-red-50 text-red-600 rounded-lg flex items-center gap-2"><AlertCircle size={16}/>{errorMsg}</div>}
+                                </div>
+
+                                {/* Results Area */}
+                                {generatedText && activeTab !== 'ai_tutor' && (
+                                    <div className="xl:col-span-12 flex flex-col gap-6 fade-in">
+                                        <div className="flex flex-col xl:flex-row gap-6">
+                                            <div className="flex-1 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+                                                <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                                                    <span className="font-bold text-slate-700 flex items-center gap-2"><BookOpen size={18} className="text-orange-600"/> {isComparing ? '原文 vs 改寫' : '學習文本'}</span>
+                                                    <div className="flex gap-2"><button className="p-2 text-slate-500 hover:bg-white rounded"><Layout size={16} /></button><button className="p-2 text-slate-500 hover:bg-white rounded"><Download size={16} /></button></div>
+                                                </div>
+                                                <div className="relative">
+                                                    {isComparing && originalText ? (
+                                                        <div className="grid grid-cols-2 divide-x divide-slate-100 min-h-[200px]">
+                                                            <div className="p-6 text-base leading-relaxed text-slate-500 whitespace-pre-wrap font-serif bg-slate-50"><div className="text-xs font-bold text-slate-400 mb-2 uppercase tracking-wide">原始文本</div>{originalText}</div>
+                                                            <div className="p-6 text-base leading-relaxed text-slate-800 whitespace-pre-wrap font-serif bg-white"><div className="text-xs font-bold text-green-600 mb-2 uppercase tracking-wide">改寫後</div>{generatedText}</div>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="p-6 text-lg leading-relaxed text-slate-800 whitespace-pre-wrap font-serif relative min-h-[200px]"><div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none"><Sparkles size={80} /></div>{generatedText}</div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <div className="w-full xl:w-80 flex flex-col gap-4">
+                                                <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200"><h3 className="text-sm font-bold text-slate-500 uppercase mb-3 flex items-center gap-2"><BarChart3 size={16}/> AI 助教分析</h3><p className="text-sm text-slate-600 leading-relaxed">{generatedMeta?.analysis || "暫無分析"}</p></div>
+                                                {activeTab === 'multimodal' && multimodalData.image && (<div className="bg-white p-2 rounded-2xl shadow-sm border border-slate-200"><img src={multimodalData.image} alt="Scene" className="w-full rounded-xl" /></div>)}
+                                                {activeTab === 'multimodal' && multimodalData.audio && (<div className="bg-pink-50 p-4 rounded-2xl border border-pink-100 flex flex-col gap-2"><div className="text-xs font-bold text-pink-700 uppercase">AI 語音播放</div><audio controls src={multimodalData.audio} className="w-full h-8" /></div>)}
+                                            </div>
+                                        </div>
+                                        {activeTab === 'qa' && qaData && (
+                                            <div className="bg-white rounded-2xl shadow-sm border border-blue-200 overflow-hidden">
+                                                <div className="bg-blue-50 px-6 py-4 border-b border-blue-100 font-bold text-blue-800 flex items-center justify-between"><div className="flex items-center gap-2"><HelpCircle size={18} /> {qaType.name}</div><button onClick={() => setShowTeacherMode(!showTeacherMode)} className="text-xs flex items-center gap-1 px-3 py-1.5 rounded-full bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors font-medium">{showTeacherMode ? <><EyeOff size={14}/> 隱藏答案 (學生模式)</> : <><Eye size={14}/> 顯示答案 (教師模式)</>}</button></div>
+                                                <div className="p-6 grid gap-6">
+                                                    {qaData.map((q, idx) => {
+                                                        const userAnswer = userAnswers[q.id];
+                                                        const isCorrect = userAnswer === q.correctAnswer;
+                                                        const showResult = showTeacherMode || userAnswer;
+                                                        return (
+                                                            <div key={q.id} className="border-b border-slate-100 last:border-0 pb-6 last:pb-0">
+                                                                <div className="font-bold text-slate-800 mb-3 flex gap-2"><span className="bg-blue-100 text-blue-700 w-6 h-6 rounded-full flex items-center justify-center text-xs flex-shrink-0">{idx + 1}</span>{q.question}</div>
+                                                                {q.options && (<div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3 pl-8">{q.options.map((opt, oid) => { let optionClass = "text-sm p-3 rounded-lg border cursor-pointer transition-all "; if (showResult) { if (opt === q.correctAnswer) optionClass += "bg-green-100 border-green-300 text-green-800 font-medium "; else if (opt === userAnswer && opt !== q.correctAnswer) optionClass += "bg-red-50 border-red-200 text-red-600 "; else optionClass += "bg-slate-50 border-slate-100 text-slate-400 opacity-60 "; } else { optionClass += "bg-white border-slate-200 hover:bg-blue-50 hover:border-blue-300 text-slate-700 "; } return (<div key={oid} onClick={() => handleAnswerSelect(q.id, opt)} className={optionClass}><div className="flex justify-between items-center">{opt}{showResult && opt === q.correctAnswer && <CheckCircle2 size={16} className="text-green-600" />}{showResult && opt === userAnswer && opt !== q.correctAnswer && <XCircle size={16} className="text-red-500" />}</div></div>); })}</div>)}
+                                                                {showResult && (<div className="pl-8 mt-3"><div className={`text-sm p-3 rounded-lg ${isCorrect || showTeacherMode ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}><span className="font-bold mr-2">詳解：</span>{q.explanation}</div></div>)}
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        </main>
+                    </div>
+{/* === 手機版底部導覽列 (Page 1) === */}
+<div className="lg:hidden fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 flex justify-around items-center p-2 z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+    {[
+        { id: 'generate', icon: PenTool, label: '生成' },
+        { id: 'rewrite', icon: RefreshCw, label: '改寫' },
+        { id: 'qa', icon: MessageCircle, label: '問答' },
+        { id: 'multimodal', icon: Headphones, label: '多模態' },
+        { id: 'ai_tutor', icon: GraduationCap, label: '助教' }
+    ].map((item) => (
+        <button 
+            key={item.id} 
+            onClick={() => setActiveTab(item.id)} 
+            className={`flex flex-col items-center justify-center w-full py-1 ${activeTab === item.id ? 'text-orange-600' : 'text-slate-400'}`}
+        >
+            <item.icon size={20} />
+            <span className="text-[10px] mt-1 font-medium">{item.label}</span>
+        </button>
+    ))}
+</div>
+                    {/* FAB */}
+                    <div className="fixed bottom-8 right-8 z-50 flex flex-col items-end gap-3">
+                        {fabOpen && (<div className="flex flex-col gap-3 mb-2 fade-in">{[{ id: 'rewrite', label: '改寫', color: 'bg-green-500', icon: RefreshCw }, { id: 'qa', label: '問答', color: 'bg-blue-500', icon: MessageCircle }, { id: 'multimodal', label: '多模態', color: 'bg-purple-500', icon: Headphones }, { id: 'ai_tutor', label: 'AI 助教', color: 'bg-amber-500', icon: GraduationCap }].map((action) => (<button key={action.id} onClick={() => switchTab(action.id)} className={`flex items-center gap-3 pr-2 pl-4 py-2 rounded-full shadow-lg text-white hover:scale-105 transition-transform ${action.color}`}><span className="text-sm font-medium">{action.label}</span><span className="bg-white/20 p-1.5 rounded-full"><action.icon size={16} /></span></button>))}</div>)}
+                        <button onClick={() => setFabOpen(!fabOpen)} className={`p-4 rounded-full shadow-2xl text-white transition-all transform hover:scale-110 ${fabOpen ? 'bg-slate-700 rotate-45' : 'bg-orange-500'}`}>{fabOpen ? <X size={28} /> : <Menu size={28} />}</button>
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<ChineseLearningApp />);
+    </script>
+</body>
+</html>

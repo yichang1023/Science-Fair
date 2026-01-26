@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>華語 AI 百寶箱 (Gemini Hybrid Ultimate)</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        body { font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif; background-color: #F8FAFC; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        
+        /* Ken Burns Effect for Dynamic Visuals */
+        @keyframes ken-burns {
+            0% { transform: scale(1.0); }
+            100% { transform: scale(1.1); }
+        }
+        .animate-ken-burns { animation: ken-burns 20s ease-out infinite alternate; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel" data-type="module">
+        import React, { useState, useEffect, useRef } from 'https://esm.sh/react@18.2.0';
+        import { createRoot } from 'https://esm.sh/react-dom@18.2.0/client';
+        
+        import { 
+            Menu, BookOpen, PenTool, MessageCircle, Bot, Headphones, 
+            Settings, LogIn, Globe, ChevronRight, Home, Zap, 
+            RefreshCw, FileText, Download, X, User, GraduationCap,
+            Code, Sparkles, Copy, Layers, PlayCircle, Star, Share2,
+            ArrowRight, Mic, Volume2, Image as ImageIcon, Send, Sliders,
+            CheckCircle2, AlertCircle, Lightbulb, Search, Loader2, Key, Rocket, Gem,
+            PauseCircle, Book, Eye, Camera
+        } from 'https://esm.sh/lucide-react@0.292.0';
+
+        // --- 1. Constants & Data ---
+        const THEMES = [
+            { id: 1, name: '日常生活', icon: '☀️', scenarios: ['打招呼', '時間', '天氣', '買東西', '看醫生', '理髮', '找朋友'] },
+            { id: 2, name: '飲食文化', icon: '🍜', scenarios: ['點餐', '推薦美食', '吃火鍋', '包餃子', '食材介紹', '菜單詢問', '用餐禮儀'] },
+            { id: 3, name: '交通出行', icon: '🚌', scenarios: ['問路', '搭公車', '買票', '訂房', '過海關', '租車', '遲到道歉'] },
+            { id: 4, name: '購物消費', icon: '🛍️', scenarios: ['詢價', '折扣', '退貨', '線上購物', '電子支付', '試穿衣服', '贈禮'] },
+            { id: 5, name: '工作職場', icon: '💼', scenarios: ['面試', '自我介紹', '開會', '提案', '電話', '報告', '請假'] },
+            { id: 6, name: '醫療保健', icon: '🏥', scenarios: ['掛號', '問診', '拿藥', '身體狀況', '運動建議', '預防保健', '心理諮詢'] },
+            { id: 7, name: '休閒娛樂', icon: '🎉', scenarios: ['看電影', '唱歌', '旅遊', '打球', '玩遊戲', '興趣介紹', '週末計畫'] },
+            { id: 8, name: '節慶活動', icon: '🏮', scenarios: ['春節', '中秋', '端午', '聖誕', '生日', '婚禮', '跨年'] },
+            { id: 9, name: '社交互動', icon: '💬', scenarios: ['聊天', '邀約', '送禮', '讚美', '拒絕', '道歉', '感謝'] },
+            { id: 10, name: '其他自訂', icon: '➕', scenarios: ['自訂情境 A', '自訂情境 B'] },
+        ];
+
+        const MM_SCENARIOS = [
+            { id: 'night_market', icon: '🍜', title: '夜市殺價', keyword: 'night market food stall taiwan', prompt: '在台灣夜市跟老闆殺價', desc: '學習如何在熱鬧的夜市中詢價與議價' },
+            { id: 'mrt', icon: '🚇', title: '捷運問路', keyword: 'taipei mrt station', prompt: '在捷運站詢問如何轉乘', desc: '掌握捷運站內的詢問與方向指引' },
+            { id: 'hospital', icon: '🏥', title: '醫院掛號', keyword: 'hospital reception counter', prompt: '在醫院櫃檯掛號看診', desc: '掛號流程與症狀描述的基礎對話' },
+            { id: 'office', icon: '💼', title: '會議提案', keyword: 'business meeting presentation', prompt: '在辦公室會議中進行提案', desc: '正式商務場合的提案技巧與用語' },
+            { id: 'immigration', icon: '🛂', title: '辦居留證', keyword: 'immigration office counter', prompt: '在移民署辦理居留證', desc: '行政機關辦理證件的常用詞彙' },
+            { id: 'bank', icon: '🏦', title: '銀行開戶', keyword: 'bank teller counter', prompt: '在銀行櫃檯辦理開戶', desc: '金融服務相關的精確用語' },
+            { id: 'convenience', icon: '📦', title: '超商包裹', keyword: 'convenience store taiwan', prompt: '在便利商店詢問包裹', desc: '處理包裹取件與寄件的日常對話' },
+            { id: 'school', icon: '🏫', title: '校園行政', keyword: 'university administration office', prompt: '在校園行政處詢問學費繳交', desc: '校園生活行政事務的溝通' },
+        ];
+
+        const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C6'];
+
+        const PATTERNS = [
+            { id: 'narrative', name: '情境敘述', desc: '客觀描述人事物', prompt_rule: '客觀描述環境、動作或事件流程。使用第三人稱或中性視角。' },
+            { id: 'experience', name: '經驗分享', desc: '主觀感受與回憶', prompt_rule: '主觀描述個人經歷與感受。使用第一人稱「我...」，包含情緒與心理活動。' },
+            { id: 'advice', name: '實用建議', desc: '指引與解決方案', prompt_rule: '提供指引、步驟或建議。多用祈使句或建議語氣。' },
+            { id: 'analysis', name: '深度分析', desc: '邏輯推演與探討', prompt_rule: '探討原因、影響、利弊比較。邏輯性強，多用連接詞。' },
+        ];
+
+        const ASSISTANTS = [
+            { 
+                id: 'wang', name: '王老師', style: '嚴格糾錯、重視語法', avatar: '👨‍🏫', color: 'bg-blue-100 text-blue-700',
+                greeting: '同學好。我是王老師，我會嚴格檢查你的語法結構與用詞精確度。請開始練習。', 
+                prompt_persona: '你是一位嚴格的資深華語教師「王老師」。你的教學風格嚴肅、直接，非常重視語法正確性與詞彙精準度。當學生說話時，你會優先指出錯誤並提供修正版本，較少閒聊。請用繁體中文回答。' 
+            },
+            { 
+                id: 'lin', name: '林老師', style: '親切鼓勵、重視溝通', avatar: '👩‍🏫', color: 'bg-orange-100 text-orange-700',
+                greeting: '嗨！我是林老師 👋 別怕說錯，語言就是用來溝通的！我們輕鬆聊聊天吧？', 
+                prompt_persona: '你是一位親切熱情的華語教師「林老師」。你的教學風格溫柔、充滿鼓勵，重視溝通的流暢度與自信。即使學生有小錯誤，只要不影響理解，你會先稱讚再委婉建議。請用繁體中文回答，多用表情符號。' 
+            },
+        ];
+
+        // --- 2. Mock Engines (Trial Mode - Restored & Enhanced) ---
+        const getRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
+        
+        // 2.0 Mock Database (Restored for Text Generation)
+        const MOCK_DB = {
+            'common': {
+                connectors: ['不僅...而且...', '雖然...但是...', '除非...否則...', '一方面...另一方面...', '之所以...是因為...']
+            },
+            '日常生活': {
+                verbs: { easy: ['買', '去', '看', '做'], hard: ['處理', '經營', '維繫', '探討'] },
+                nouns: { easy: ['東西', '朋友', '時間', '衣服'], hard: ['人際關係', '生活品質', '氛圍', '價值觀'] },
+                adjs: { easy: ['好', '貴', '忙', '開心'], hard: ['充實', '繁瑣', '珍貴', '和諧'] },
+                idioms: ['柴米油鹽', '習以為常', '日理萬機', '井井有條']
+            },
+            '飲食文化': {
+                verbs: { easy: ['吃', '喝', '煮', '點'], hard: ['品嚐', '烹飪', '講究', '傳承'] },
+                nouns: { easy: ['菜', '水', '飯', '味道'], hard: ['風味', '飲食習慣', '饗宴', '食材'] },
+                adjs: { easy: ['好吃', '辣', '甜', '香'], hard: ['鮮美', '道地', '精緻', '垂涎三尺'] },
+                idioms: ['大快朵頤', '色香味俱全', '食指大動', '細嚼慢嚥']
+            },
+            '交通出行': {
+                verbs: { easy: ['坐', '開', '走', '等'], hard: ['搭乘', '規劃', '穿梭', '抵達'] },
+                nouns: { easy: ['車', '路', '票', '捷運'], hard: ['交通樞紐', '路況', '旅程', '運輸'] },
+                adjs: { easy: ['快', '慢', '遠', '方便'], hard: ['擁擠', '便捷', '順暢', '顛簸'] },
+                idioms: ['車水馬龍', '四通八達', '塞車之苦', '風塵僕僕']
+            },
+            '購物消費': {
+                verbs: { easy: ['買', '賣', '付', '換'], hard: ['採購', '比價', '退換', '消費'] },
+                nouns: { easy: ['錢', '卡', '店', '袋子'], hard: ['預算', '優惠', '品質', '售後服務'] },
+                adjs: { easy: ['便宜', '貴', '新', '舊'], hard: ['實惠', '昂貴', '新穎', '陳舊'] },
+                idioms: ['貨比三家', '物美價廉', '斤斤計較', '琳瑯滿目']
+            },
+            'default': {
+                verbs: { easy: ['用', '找', '聽', '說'], hard: ['使用', '尋求', '聆聽', '表達'] },
+                nouns: { easy: ['事', '人', '錢', '地方'], hard: ['情況', '對象', '成本', '環境'] },
+                adjs: { easy: ['多', '少', '大', '小'], hard: ['複雜', '稀缺', '廣泛', '微小'] },
+                idioms: ['不可或缺', '輕而易舉', '舉足輕重', '息息相關']
+            }
+        };
+
+        // 2.1 Text Generation Logic (Restored)
+        const generateMockContent = (themeName, scenario, level, pattern) => {
+            const db = MOCK_DB[themeName] || MOCK_DB['default'];
+            const common = MOCK_DB['common'];
+            
+            const isEasy = ['A1', 'A2'].includes(level);
+            const isHard = ['C1', 'C6'].includes(level);
+
+            const v = isEasy ? getRandom(db.verbs.easy) : getRandom(db.verbs.hard);
+            const n = isEasy ? getRandom(db.nouns.easy) : getRandom(db.nouns.hard);
+            const adj = isEasy ? getRandom(db.adjs.easy) : getRandom(db.adjs.hard);
+            const idiom = getRandom(db.idioms);
+            const conn = getRandom(common.connectors);
+
+            let content = [];
+            let keyVocab = [];
+
+            if (pattern === 'narrative') {
+                if (isEasy) {
+                    content = [
+                        { type: "標準範例", text: `這裡有${n}，我覺得很${adj}。`, pinyin: `Zhèlǐ yǒu ${n}...`, grammar_point: "存在句 (有...)" },
+                        { type: "口語變化", text: `你看！這裡的${n}好${adj}喔！`, pinyin: "Nǐ kàn...", grammar_point: "語氣詞 (喔)" },
+                        { type: "擴充應用", text: `因為${adj}，所以很多人來${v}。`, pinyin: "Yīnwèi...", grammar_point: "因為...所以..." }
+                    ];
+                    keyVocab = [n, adj, "覺得"];
+                } else {
+                    content = [
+                        { type: "標準範例", text: `環顧四周，這裡的${n}呈現出一種${adj}的氛圍，令人${idiom}。`, pinyin: "Huángù sìzhōu...", grammar_point: "描寫補語 / 成語" },
+                        { type: "口語變化", text: `說真的，這場景簡直就是${idiom}，那種${adj}的感覺太強烈了。`, pinyin: "Shuō zhēn de...", grammar_point: "強調語氣" },
+                        { type: "擴充應用", text: `隨著時間推移，${scenario}已不僅是${v}，更是一種文化的象徵。`, pinyin: "Suízhe...", grammar_point: "隨著... (With...)" }
+                    ];
+                    keyVocab = [idiom, "氛圍", "象徵"];
+                }
+            } else if (pattern === 'experience') {
+                if (isEasy) {
+                    content = [
+                        { type: "標準範例", text: `我昨天去${v}${n}，我很開心。`, pinyin: "Wǒ zuótiān...", grammar_point: "過去式 (Time)" },
+                        { type: "口語變化", text: `我跟你說，${scenario}真的超${adj}的啦！`, pinyin: "Wǒ gēn nǐ shuō...", grammar_point: "口語開頭 (我跟你說)" },
+                        { type: "擴充應用", text: `我想要再${v}一次，因為很${adj}。`, pinyin: "Wǒ xiǎng yào...", grammar_point: "想要 (Want)" }
+                    ];
+                    keyVocab = ["昨天", "開心", "想要"];
+                } else {
+                    content = [
+                        { type: "標準範例", text: `回想起那次${scenario}的經歷，${n}的${adj}至今仍讓我難以忘懷。`, pinyin: "Huíxiǎng...", grammar_point: "回想... (Recall)" },
+                        { type: "口語變化", text: `坦白說，如果不曾親自${v}，真的很難體會那種${idiom}的感覺。`, pinyin: "Tǎnbái shuō...", grammar_point: "假設語氣" },
+                        { type: "擴充應用", text: `${conn.split('...')[0]}是為了${n}，${conn.split('...')[1]}是為了尋找自我。`, pinyin: "Bùjǐn...", grammar_point: "並列複句" }
+                    ];
+                    keyVocab = ["經歷", "體會", idiom];
+                }
+            } else if (pattern === 'advice') {
+                if (isEasy) {
+                    content = [
+                        { type: "標準範例", text: `請你多${v}，這對${n}很好。`, pinyin: "Qǐng nǐ...", grammar_point: "對...很好 (Good for)" },
+                        { type: "口語變化", text: `你要記得${v}喔，不然會不${adj}。`, pinyin: "Nǐ yào jìdé...", grammar_point: "不然 (Otherwise)" },
+                        { type: "擴充應用", text: `你可以先${v}，再去看${n}。`, pinyin: "Nǐ kěyǐ...", grammar_point: "先...再... (First... then)" }
+                    ];
+                    keyVocab = ["記得", "不然", "先...再"];
+                } else {
+                    content = [
+                        { type: "標準範例", text: `建議您在${scenario}時，務必考量${n}的${adj}性，以免${idiom}。`, pinyin: "Jiànyì nín...", grammar_point: "以免 (Lest)" },
+                        { type: "口語變化", text: `聽我一句勸，${scenario}的關鍵在於${v}，千萬別忽略細節。`, pinyin: "Tīng wǒ...", grammar_point: "關鍵在於" },
+                        { type: "擴充應用", text: `唯有透過持續的${v}，我們才能在${scenario}中獲得真正的${adj}。`, pinyin: "Wéiyǒu...", grammar_point: "唯有...才..." }
+                    ];
+                    keyVocab = ["務必", "以免", "關鍵"];
+                }
+            } else { // Analysis
+                content = [
+                    { type: "標準範例", text: `關於${scenario}，主要的問題在於${n}太${adj}。`, pinyin: "Guānyú...", grammar_point: "在於 (Lies in)" },
+                    { type: "口語變化", text: `其實${scenario}也沒那麼複雜，就是${n}的問題而已嘛。`, pinyin: "Qíshí...", grammar_point: "而已 (Just/Only)" },
+                    { type: "擴充應用", text: `${conn.split('...')[0]}我們要${v}，${conn.split('...')[1]}也要顧及${n}。`, pinyin: "...", grammar_point: "連接詞運用" }
+                ];
+                keyVocab = ["問題", "複雜", "顧及"];
+            }
+
+            return { content, stats: { estimated_level: level, key_vocabulary: keyVocab } };
+        };
+        
+        // 2.2 QA Mock DB
+        const MOCK_QA_DB = {
+            default: {
+                answer: "這是一個很好的問題。在華語文化中，我們通常會根據對象的長幼尊卑來決定措辭。",
+                culture: "華人社會非常重視「禮貌」與「面子」，在不確定的情況下，多用「請問」、「不好意思」準沒錯。",
+                vocab: [{word: "禮貌", pinyin: "lǐ mào"}, {word: "尊重", pinyin: "zūn zhòng"}]
+            },
+            '飲食': {
+                answer: "在用餐情境中，如果是長輩請客，通常會由長輩先動筷子。",
+                culture: "圓桌吃飯時，轉盤應順時針轉動。夾菜時不要在盤子裡翻挑，這被視為不禮貌的行為。",
+                vocab: [{word: "圓桌", pinyin: "yuán zhuō"}, {word: "公筷母匙", pinyin: "gōng kuài mǔ chí"}]
+            }
+        };
+
+        // 2.3 Assistant Mock Responses
+        const MOCK_CHAT_DB = {
+            'wang': [
+                "這位同學，你的句子結構有點鬆散。建議加上主詞會更完整。",
+                "注意，「就」和「才」的用法不同，這裡應該用「才」。",
+                "你的詞彙量還可以，但是語法準確度需要加強。請重試一次。"
+            ],
+            'lin': [
+                "哇！你說得很棒耶！👍 意思非常清楚！",
+                "沒錯沒錯，就是這樣用！你的進步很快喔！✨",
+                "別擔心語法，我聽得懂你的意思！如果想更道地一點，可以試試看這樣說..."
+            ]
+        };
+
+        // 2.4 Multimodal Mock Script
+        const generateMockMMScript = (scenarioTitle, level) => {
+            const isEasy = ['A1', 'A2'].includes(level);
+            
+            // Mock content tailored to the new scenarios
+            const scriptData = {
+                '夜市殺價': {
+                    easy: [
+                        { speaker: "我", text: "老闆，這個多少錢？" },
+                        { speaker: "老闆", text: "三百塊。" },
+                        { speaker: "我", text: "太貴了，兩百五可以嗎？" },
+                        { speaker: "老闆", text: "好啦，算你便宜一點。" }
+                    ],
+                    hard: [
+                        { speaker: "顧客", text: "老闆，這件商品的定價似乎略高於市場行情。" },
+                        { speaker: "店家", text: "這可是手工製作的，品質絕對有保證，一分錢一分貨啊。" },
+                        { speaker: "顧客", text: "我理解您的成本考量，但若能給個折扣，我會考慮多帶幾件。" },
+                        { speaker: "店家", text: "看您這麼有誠意，那就給您個友情價吧。" }
+                    ],
+                    visual_tags: ["招牌 (Signboard)", "人潮 (Crowd)", "現金 (Cash)"],
+                    culture_note: "在台灣夜市殺價是一種樂趣，但要注意禮貌，不要砍價太過離譜。"
+                },
+                '醫院掛號': {
+                    easy: [
+                        { speaker: "我", text: "你好，我要掛號。" },
+                        { speaker: "護理師", text: "請問哪裡不舒服？" },
+                        { speaker: "我", text: "我頭痛，還有發燒。" },
+                        { speaker: "護理師", text: "好的，請填寫這張表。" }
+                    ],
+                    hard: [
+                        { speaker: "病患", text: "您好，我需要掛內科門診，這幾天持續出現偏頭痛的症狀。" },
+                        { speaker: "櫃檯", text: "請問您是否有指定醫師？或是由我們為您安排值班醫師？" },
+                        { speaker: "病患", text: "請幫我安排最快能看診的醫師即可，另外我有藥物過敏史。" },
+                        { speaker: "櫃檯", text: "了解，請出示健保卡，並稍候為您測量體溫與血壓。" }
+                    ],
+                    visual_tags: ["健保卡 (Health Card)", "口罩 (Mask)", "掛號單 (Form)"],
+                    culture_note: "台灣的健保制度非常方便，就醫時務必攜帶健保卡 (NHI Card)。"
+                },
+                'default': {
+                    easy: [
+                        { speaker: "A", text: `請問${scenarioTitle}怎麼做？` },
+                        { speaker: "B", text: `你可以先去櫃檯問問看。` },
+                        { speaker: "A", text: `好的，謝謝你的幫忙。` },
+                        { speaker: "B", text: `不客氣，祝你順利。` }
+                    ],
+                    hard: [
+                        { speaker: "A", text: `關於${scenarioTitle}的流程，似乎比想像中繁瑣。` },
+                        { speaker: "B", text: `確實，建議您先備妥相關文件，以提升辦理效率。` },
+                        { speaker: "A", text: `這建議非常中肯，我會特別留意的。` },
+                        { speaker: "B", text: `若有任何疑慮，隨時可以向相關人員諮詢。` }
+                    ],
+                    visual_tags: ["櫃檯 (Counter)", "文件 (Document)", "服務人員 (Staff)"],
+                    culture_note: `在${scenarioTitle}時，保持耐心與禮貌是溝通順暢的關鍵。`
+                }
+            };
+
+            const data = scriptData[scenarioTitle] || scriptData['default'];
+            return {
+                script: isEasy ? data.easy : data.hard,
+                visual_tags: data.visual_tags,
+                culture_note: data.culture_note
+            };
+        };
+
+        // --- 3. API & Logic Helpers ---
+
+        const getLevelDesc = (level) => {
+            const map = {
+                'A1': '句長：短句 (5-10字) | 詞彙：超高頻詞 | 語法：SVO', 'A2': '句長：生活常用句 | 詞彙：具體名詞',
+                'B1': '句長：中長句 | 詞彙：抽象名詞', 'B2': '句長：段落結構 | 語法：複句',
+                'C1': '句長：結構複雜 | 語法：倒裝/修辭', 'C6': '句長：母語水準 | 語法：文化隱喻'
+            };
+            return map[level] || map['B1'];
+        };
+
+        const callGeminiAPI = async (apiKey, prompt, systemInstruction = "", jsonMode = false) => {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }],
+                systemInstruction: { parts: [{ text: systemInstruction }] },
+                generationConfig: { temperature: 0.7, maxOutputTokens: 2000, ...(jsonMode && { responseMimeType: "application/json" }) }
+            };
+            const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            if (!response.ok) throw new Error(`API Error: ${response.status}`);
+            const data = await response.json();
+            const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (!text) throw new Error("No content generated");
+            return jsonMode ? JSON.parse(text) : text;
+        };
+
+        // --- 4. Components ---
+
+        const Button = ({ children, onClick, variant = 'primary', className = '', disabled = false, size = 'md' }) => {
+            const base = "font-medium transition-all duration-200 flex items-center justify-center gap-2 shadow-sm active:scale-95 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100";
+            const sizes = { sm: "px-3 py-1.5 text-sm", md: "px-4 py-2", lg: "px-6 py-3 text-lg" };
+            const variants = {
+                primary: "bg-[#006699] text-white hover:bg-[#005580]",
+                secondary: "bg-[#FFB347] text-gray-900 hover:bg-[#ffa524]",
+                outline: "border border-[#006699] text-[#006699] hover:bg-blue-50",
+                ghost: "text-gray-600 hover:bg-gray-100",
+                dark: "bg-gray-800 text-gray-200 hover:bg-gray-900",
+                trial: "bg-emerald-600 text-white hover:bg-emerald-700"
+            };
+            return <button onClick={onClick} disabled={disabled} className={`${base} ${sizes[size]} ${variants[variant]} ${className}`}>{children}</button>;
+        };
+
+        const Card = ({ children, title, icon: Icon, className = '', headerAction, noPadding = false }) => (
+            
+            <div className={`bg-white rounded-xl shadow-md border border-gray-100 flex flex-col ${className}`}>
+                {(title || Icon) && (
+                    <div className="bg-gray-50 px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            {Icon && <span className="text-[#FFB347]"><Icon size={20}/></span>}
+                            <h3 className="font-bold text-gray-800">{title}</h3>
+                        </div>
+                        {headerAction}
+                    </div>
+                )}
+                <div className={`${noPadding ? '' : 'p-4'} flex-1 overflow-auto`}>{children}</div>
+            </div>
+        );
+
+        // --- 5. Mode Selection Modal ---
+        const ModeSelectionModal = ({ isOpen, onClose, onSelectMode, currentKey }) => {
+            const [step, setStep] = useState(currentKey ? 'api' : 'select');
+            const [inputKey, setInputKey] = useState(currentKey || '');
+            const [showPassword, setShowPassword] = useState(false);
+
+            useEffect(() => { 
+                if (isOpen && currentKey) setStep('api'); 
+                else if (isOpen) setStep('select');
+                setInputKey(currentKey || '');
+            }, [isOpen, currentKey]);
+
+            if (!isOpen) return null;
+
+            return (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in p-4">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-gray-100">
+                        <div className="bg-[#006699] px-6 py-4 flex justify-between items-center text-white">
+                            <h3 className="text-xl font-bold flex items-center gap-2"><Settings size={20}/> 平台設定</h3>
+                            <button onClick={onClose} className="hover:bg-white/20 p-1 rounded-full"><X size={20}/></button>
+                        </div>
+                        <div className="p-6">
+                            {step === 'select' ? (
+                                <div className="space-y-4">
+                                    <p className="text-gray-600 text-center mb-6">請選擇您要使用的模式：</p>
+                                    <button onClick={() => onSelectMode('trial', '')} className="w-full p-4 rounded-xl border-2 border-emerald-100 hover:border-emerald-500 bg-emerald-50/50 hover:bg-emerald-50 transition-all group flex items-center gap-4 text-left">
+                                        <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform"><Rocket size={24}/></div>
+                                        <div><div className="font-bold text-gray-800 text-lg">體驗版 (Trial)</div><div className="text-xs text-gray-500">免 Key • 高擬真模擬引擎 • 快速體驗</div></div>
+                                    </button>
+                                    <button onClick={() => setStep('api')} className="w-full p-4 rounded-xl border-2 border-blue-100 hover:border-[#006699] bg-blue-50/50 hover:bg-blue-50 transition-all group flex items-center gap-4 text-left">
+                                        <div className="w-12 h-12 rounded-full bg-blue-100 text-[#006699] flex items-center justify-center group-hover:scale-110 transition-transform"><Gem size={24}/></div>
+                                        <div><div className="font-bold text-gray-800 text-lg">正式版 (Full)</div><div className="text-xs text-gray-500">需 Key • Gemini 2.5 Flash 真實 AI</div></div>
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="space-y-4">
+                                    <div className="flex items-center gap-2 text-[#006699] mb-2 cursor-pointer hover:underline" onClick={() => setStep('select')}><ArrowRight size={14} className="rotate-180"/> 返回選擇</div>
+                                    <p className="text-sm text-gray-500">請輸入 Google Gemini API Key。Key 僅儲存於本地瀏覽器。</p>
+                                    <div className="relative">
+                                        <input type={showPassword ? "text" : "password"} value={inputKey} onChange={(e) => setInputKey(e.target.value)} placeholder="AIzaSy..." className="w-full p-3 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#006699] font-mono text-sm"/>
+                                        <button onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-3 text-gray-400 hover:text-gray-600">{showPassword ? <ArrowRight size={16} className="rotate-180"/> : <ArrowRight size={16}/>}</button>
+                                    </div>
+                                    <div className="mt-2 text-xs text-gray-400 flex justify-between"><a href="https://aistudio.google.com/app/apikey" target="_blank" className="underline hover:text-[#006699]">取得 API Key</a></div>
+                                    <Button onClick={() => onSelectMode('full', inputKey)} className="w-full mt-4">確認並啟用 AI</Button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- 6. Main App Component ---
+        function HuaYuAIApp() {
+            // App State
+            const [appMode, setAppMode] = useState('trial'); 
+            const [apiKey, setApiKey] = useState('');
+            const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+            const [activeTab, setActiveTab] = useState('generate');
+            const [selectedTheme, setSelectedTheme] = useState(THEMES[0]);
+            const [selectedScenario, setSelectedScenario] = useState(THEMES[0].scenarios[0]);
+            
+            // Feature State
+            const [genLevel, setGenLevel] = useState('B1');
+            const [genPattern, setGenPattern] = useState('narrative');
+            const [genResult, setGenResult] = useState(null);
+            const [isGenerating, setIsGenerating] = useState(false);
+
+            const [rewriteInput, setRewriteInput] = useState('');
+            const [rewriteMode, setRewriteMode] = useState('formal');
+            const [rewriteResult, setRewriteResult] = useState(null);
+            const [isRewriting, setIsRewriting] = useState(false);
+
+            // QA State
+            const [qaMessages, setQaMessages] = useState([]);
+            const [qaInput, setQaInput] = useState('');
+            const [isQAing, setIsQAing] = useState(false);
+            
+            // Assistant State
+            const [selectedAssistant, setSelectedAssistant] = useState(ASSISTANTS[0]);
+            const [chatMessages, setChatMessages] = useState([]);
+            const [chatInput, setChatInput] = useState('');
+            const [isChatting, setIsChatting] = useState(false);
+
+            // Multimodal State
+            const [mmScenario, setMmScenario] = useState(MM_SCENARIOS[0]);
+            const [mmData, setMmData] = useState(null);
+            const [isMmGen, setIsMmGen] = useState(false);
+
+            // Common
+            const [playingId, setPlayingId] = useState(null);
+            const [showPromptDebug, setShowPromptDebug] = useState(false);
+            const [lastPrompt, setLastPrompt] = useState({ system: "", user: "" });
+
+            // Init
+            useEffect(() => {
+                const storedKey = localStorage.getItem('hua_yu_api_key');
+                const storedMode = localStorage.getItem('hua_yu_app_mode');
+                if (storedKey) { setApiKey(storedKey); setAppMode('full'); }
+                else if (storedMode === 'trial') { setAppMode('trial'); }
+                else { setTimeout(() => setIsSettingsOpen(true), 500); }
+            }, []);
+
+            const handleModeSelect = (mode, key) => {
+                setAppMode(mode);
+                localStorage.setItem('hua_yu_app_mode', mode);
+                if (mode === 'full' && key) { setApiKey(key); localStorage.setItem('hua_yu_api_key', key); }
+                setIsSettingsOpen(false);
+            };
+
+            // Reset Contexts
+            useEffect(() => {
+                setQaMessages([{ role: 'ai', type: 'text', text: `你好！我是你的華語問答助手。針對【${selectedTheme.name} - ${selectedScenario}】，有什麼想問的嗎？` }]);
+            }, [selectedTheme, selectedScenario]);
+
+            useEffect(() => {
+                setChatMessages([{ role: 'ai', text: selectedAssistant.greeting }]);
+            }, [selectedAssistant]);
+
+            // --- Handlers ---
+
+            const handleGenerate = async () => {
+                setIsGenerating(true); setGenResult(null);
+                try {
+                    if (appMode === 'trial') {
+                        // Simulate latency
+                        await new Promise(r => setTimeout(r, 800));
+                        // Call restored Mock Engine
+                        const res = generateMockContent(selectedTheme.name, selectedScenario, genLevel, genPattern);
+                        setGenResult(res);
+                        setRewriteInput(res.content[0].text);
+                    } else {
+                        // Real API Logic
+                        const patternObj = PATTERNS.find(p => p.id === genPattern);
+                        const levelDesc = getLevelDesc(genLevel);
+                        const sys = `資深華語教師。輸出JSON: { "content": [{ "type": "...", "text": "...", "pinyin": "...", "grammar_point": "..." }], "stats": { "estimated_level": "...", "key_vocabulary": [] } }`;
+                        const usr = `主題:${selectedTheme.name}, 情境:${selectedScenario}, 等級:${genLevel}, 句型:${patternObj.name}`;
+                        const apiRes = await callGeminiAPI(apiKey, usr, sys, true);
+                        setGenResult(apiRes);
+                        if(apiRes.content?.[0]) setRewriteInput(apiRes.content[0].text);
+                    }
+                } catch(e) { console.error(e); } finally { setIsGenerating(false); }
+            };
+
+            const handleRewrite = async () => { 
+                if(!rewriteInput.trim()) return;
+                setIsRewriting(true); setRewriteResult(null);
+                try {
+                    await new Promise(r => setTimeout(r, 1000));
+                    if(appMode === 'full') {
+                        const sys = `華語編輯。輸出JSON: { "text": "...", "analysis": [{"type": "vocab", "text": "..."}], "tone": "..." }`;
+                        const res = await callGeminiAPI(apiKey, `改寫任務:${rewriteMode}, 文本:${rewriteInput}`, sys, true);
+                        setRewriteResult(res);
+                    } else {
+                        setRewriteResult({ text: `(模擬改寫) ${rewriteInput}`, analysis: [{type: 'grammar', text: '模擬分析...'}], tone: '模擬語氣' });
+                    }
+                } catch(e) {} finally { setIsRewriting(false); }
+            };
+
+            const handleQASend = async (text = qaInput) => {
+                if (!text.trim()) return;
+                const newMsgs = [...qaMessages, { role: 'user', type: 'text', text }];
+                setQaMessages(newMsgs);
+                setQaInput('');
+                setIsQAing(true);
+
+                try {
+                    await new Promise(r => setTimeout(r, 1000));
+                    if (appMode === 'trial') {
+                        let mockRes = MOCK_QA_DB['default'];
+                        for (const key in MOCK_QA_DB) {
+                            if (selectedTheme.name.includes(key) || text.includes(key)) mockRes = MOCK_QA_DB[key];
+                        }
+                        setQaMessages(prev => [...prev, { role: 'ai', type: 'rich', data: mockRes }]);
+                    } else {
+                        const sys = `華語文化導師。輸出JSON: { "answer": "...", "culture_note": "...", "vocabulary": [{ "word": "...", "pinyin": "..." }] }`;
+                        const usr = `情境：${selectedTheme.name}-${selectedScenario}。問題：${text}`;
+                        const res = await callGeminiAPI(apiKey, usr, sys, true);
+                        setQaMessages(prev => [...prev, { role: 'ai', type: 'rich', data: res }]);
+                    }
+                } catch (e) {
+                    setQaMessages(prev => [...prev, { role: 'ai', type: 'text', text: "抱歉，無法處理請求。" }]);
+                } finally { setIsQAing(false); }
+            };
+
+            const handleChatSend = async () => {
+                if (!chatInput.trim()) return;
+                const newMsgs = [...chatMessages, { role: 'user', text: chatInput }];
+                setChatMessages(newMsgs);
+                setChatInput('');
+                setIsChatting(true);
+
+                try {
+                    await new Promise(r => setTimeout(r, 800));
+                    if (appMode === 'trial') {
+                        const responses = MOCK_CHAT_DB[selectedAssistant.id];
+                        const randomRes = getRandom(responses);
+                        setChatMessages(prev => [...prev, { role: 'ai', text: randomRes }]);
+                    } else {
+                        const sys = `${selectedAssistant.prompt_persona} 請保持簡短。`;
+                        const historyPrompt = newMsgs.map(m => `${m.role==='user'?'學生':'老師'}: ${m.text}`).join('\n') + "\n老師:";
+                        const res = await callGeminiAPI(apiKey, historyPrompt, sys, false);
+                        setChatMessages(prev => [...prev, { role: 'ai', text: res }]);
+                    }
+                } catch (e) {
+                    setChatMessages(prev => [...prev, { role: 'ai', text: "(連線錯誤)" }]);
+                } finally { setIsChatting(false); }
+            };
+
+            const handleMmGenerate = async () => {
+                setIsMmGen(true); setMmData(null);
+                try {
+                    await new Promise(r => setTimeout(r, 1500));
+                    if (appMode === 'trial') {
+                        const res = generateMockMMScript(mmScenario.title, genLevel);
+                        setMmData(res);
+                    } else {
+                        const sys = `編劇。輸出JSON: { "script": [ { "speaker": "A", "text": "..." } ], "visual_tags": [], "culture_note": "..." }`;
+                        const usr = `情境「${mmScenario.title}」。等級${genLevel}。`;
+                        const res = await callGeminiAPI(apiKey, usr, sys, true);
+                        setMmData(res);
+                    }
+                } catch(e) { alert("生成失敗"); } finally { setIsMmGen(false); }
+            };
+
+            // --- Render Logic ---
+            return (
+                <div className="min-h-screen flex flex-col font-sans">
+                    <ModeSelectionModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} onSelectMode={handleModeSelect} currentKey={apiKey} />
+
+                    {/* Navbar */}
+                    <header className="bg-white shadow-sm sticky top-0 z-50 border-b border-gray-200">
+                        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+                            <div className="flex items-center gap-2 cursor-pointer" onClick={() => setActiveTab('generate')}>
+                                <div className="w-9 h-9 bg-[#FFB347] rounded-lg flex items-center justify-center text-white font-bold text-xl shadow-sm">華</div>
+                                <div className="flex flex-col">
+                                    <span className="text-lg font-bold tracking-tight text-[#006699] leading-tight">華語AI百寶箱
+
+{/* 回首頁按鈕 (React寫法) */}
+<a href="index.html" className="flex items-center gap-2 mr-4 text-slate-600 hover:text-orange-500 font-bold no-underline">
+    <span className="text-xl">🏠</span>
+    <span className="hidden md:inline">回首頁</span>
+</a>
+</span>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-[10px] text-gray-400 font-medium tracking-wider">v6.3 Full Restoration</span>
+                                        {appMode === 'trial' ? <span className="text-[10px] bg-emerald-100 text-emerald-700 px-1.5 rounded flex items-center gap-1"><Rocket size={10}/> 體驗版</span> : <span className="text-[10px] bg-blue-100 text-blue-700 px-1.5 rounded flex items-center gap-1"><Gem size={10}/> 正式版</span>}
+                                    </div>
+                                </div>
+                            </div>
+                            <nav className="hidden md:flex items-center gap-1">
+                                {[{ id: 'generate', label: '文本生成', icon: PenTool }, { id: 'rewrite', label: '文本改寫', icon: RefreshCw }, { id: 'qa', label: '問答延伸', icon: MessageCircle }, { id: 'assistant', label: 'AI助教', icon: Bot }, { id: 'multimodal', label: '多模態', icon: Headphones }].map((item) => (
+                                    <button key={item.id} onClick={() => setActiveTab(item.id)} className={`px-3 py-2 rounded-md flex items-center gap-2 text-sm font-medium transition-all ${activeTab === item.id ? 'bg-[#006699] text-white shadow-md scale-105' : 'text-gray-600 hover:bg-gray-100'}`}><item.icon size={16}/> {item.label}</button>
+                                ))}
+                            </nav>
+                            <div className="flex items-center gap-3">
+                                <button onClick={() => setIsSettingsOpen(true)} className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold border transition-colors ${appMode === 'full' ? 'bg-blue-50 text-blue-600 border-blue-200' : 'bg-emerald-50 text-emerald-600 border-emerald-200'}`}><Settings size={14}/> {appMode === 'full' ? '正式版設定' : '切換模式'}</button>
+                            </div>
+                        </div>
+                    </header>
+
+                    {/* Main Workspace */}
+                    <main className="max-w-7xl mx-auto px-4 py-6 flex-1 w-full grid grid-cols-1 lg:grid-cols-12 gap-6 relative z-0 pb-24">
+                        {/* Sidebar */}
+                        <div className="lg:col-span-3 flex flex-col gap-4 animate-fade-in">
+                            {activeTab === 'multimodal' ? (
+                                <Card title="選擇情境 (Visual Context)" icon={Eye} className="h-full">
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {MM_SCENARIOS.map(s => (
+                                            <button 
+                                                key={s.id} 
+                                                onClick={() => { setMmScenario(s); setMmData(null); }} 
+                                                className={`p-2 rounded-lg text-left flex flex-col items-center justify-center gap-1 transition-all ${mmScenario.id === s.id ? 'bg-[#FFF4E6] border-2 border-[#FFB347] shadow-sm' : 'bg-gray-50 hover:bg-gray-100 border-2 border-transparent'}`}
+                                            >
+                                                <span className="text-2xl">{s.icon}</span>
+                                                <span className="text-xs font-bold text-gray-700">{s.title}</span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <div className="mt-4 p-3 bg-blue-50 rounded-lg text-xs text-gray-600">
+                                        <div className="font-bold text-[#006699] mb-1">情境說明：</div>
+                                        {mmScenario.desc}
+                                    </div>
+                                </Card>
+                            ) : activeTab === 'generate' || activeTab === 'qa' ? (
+                                <>
+                                    <Card title="選擇主題" icon={BookOpen} className="min-h-[500px] md:h-full">
+                                        <div className="grid gap-1">
+                                            {THEMES.map(t => <button key={t.id} onClick={() => setSelectedTheme(t)} className={`px-3 py-2 rounded-lg text-left flex items-center gap-2 ${selectedTheme.id === t.id ? 'bg-[#FFF4E6] text-[#b37400] font-bold border-l-4 border-[#FFB347]' : 'hover:bg-gray-50'}`}><span>{t.icon}</span><span>{t.name}</span></button>)}
+                                        </div>
+                                    </Card>
+                                    <Card className="flex-1">
+                                        <div className="mb-2 text-xs font-bold text-gray-400">目前主題：{selectedTheme.name}</div>
+                                        <div className="grid gap-1">{selectedTheme.scenarios.map((s, i) => <button key={i} onClick={() => setSelectedScenario(s)} className={`px-3 py-2 rounded text-left text-sm ${selectedScenario === s ? 'bg-[#006699] text-white' : 'hover:bg-gray-50'}`}>{s}</button>)}</div>
+                                    </Card>
+                                </>
+                            ) : activeTab === 'rewrite' ? (
+                                <Card title="改寫歷史" icon={RefreshCw} className="min-h-[500px] md:h-full"><div className="text-sm text-gray-500 text-center py-4">改寫紀錄將顯示於此</div></Card>
+                            ) : (
+                                <Card title="選擇助教" icon={Bot} className="h-full">
+                                    <div className="space-y-3">
+                                        {ASSISTANTS.map(ast => (
+                                            <button key={ast.id} onClick={() => setSelectedAssistant(ast)} className={`w-full p-3 rounded-xl border-2 text-left transition-all ${selectedAssistant.id === ast.id ? `border-current ${ast.color.split(' ')[0]}` : 'border-gray-100 hover:border-gray-200'}`}>
+                                                <div className="text-2xl mb-1">{ast.avatar}</div>
+                                                <div className="font-bold text-gray-800">{ast.name}</div>
+                                                <div className="text-xs text-gray-500">{ast.style}</div>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </Card>
+                            )}
+                        </div>
+
+                        {/* Content Area */}
+                        <div className="lg:col-span-9 flex flex-col gap-6 animate-fade-in" style={{animationDelay: '0.1s'}}>
+                            
+                            {/* --- 1. Generate View --- */}
+                            {activeTab === 'generate' && (
+                                <Card className="min-h-[500px] md:h-full">
+                                    <div className="flex justify-between items-center mb-6 border-b border-gray-100 pb-4">
+                                        <div><h2 className="text-xl font-bold text-gray-800 flex items-center gap-2"><Zap className="text-[#FFB347]" size={20}/> 智能文本生成</h2><div className="text-sm text-gray-500 mt-1 flex items-center gap-1">{selectedTheme.name} <ChevronRight size={12}/> {selectedScenario}</div></div>
+                                        <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">{LEVELS.map(l => <button key={l} onClick={() => setGenLevel(l)} className={`px-3 py-1 rounded text-sm font-bold ${genLevel === l ? 'bg-white text-[#006699] shadow-sm' : 'text-gray-400'}`}>{l}</button>)}</div>
+                                    </div>
+                                    <div className="grid grid-cols-4 gap-3 mb-6">{PATTERNS.map(p => <div key={p.id} onClick={() => setGenPattern(p.id)} className={`p-3 rounded-lg border cursor-pointer ${genPattern === p.id ? 'border-[#FFB347] bg-[#FFF9F2]' : 'border-gray-100'}`}><div className="font-bold text-sm">{p.name}</div><div className="text-xs text-gray-500">{p.desc}</div></div>)}</div>
+                                    <div className="flex justify-end gap-3 mb-4"><Button variant="ghost" onClick={() => setGenResult(null)}>清除</Button><Button onClick={handleGenerate} disabled={isGenerating} className="w-48" variant={appMode === 'trial' ? 'trial' : 'primary'}>{isGenerating ? <><Loader2 className="animate-spin mr-2" size={16}/> 生成中...</> : appMode === 'trial' ? '🚀 體驗版生成' : '✨ AI 智能生成'}</Button></div>
+                                    <div className="bg-gray-50 rounded-xl p-6 flex-1 overflow-auto border border-gray-200 min-h-[300px]">
+                                        {genResult ? <div className="space-y-4 animate-fade-in">{genResult.content.map((item, idx) => <div key={idx} className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 hover:border-[#FFB347] group"><div className="flex justify-between mb-2"><span className="text-[10px] bg-orange-50 text-[#b37400] px-2 py-0.5 rounded font-bold">{item.type}</span><div className="flex gap-2 opacity-60 hover:opacity-100 transition-opacity"><button className="text-gray-400 hover:text-[#006699]" onClick={() => {setRewriteInput(item.text); setActiveTab('rewrite');}}><RefreshCw size={14}/></button></div></div><div className="text-lg font-medium text-gray-800 mb-1">{item.text}</div><div className="text-sm text-gray-400 font-mono mb-2">{item.pinyin}</div><div className="inline-flex items-center gap-1 text-xs text-[#006699] bg-blue-50 px-2 py-1 rounded"><Zap size={10}/> {item.grammar_point}</div></div>)}</div> : <div className="h-full flex flex-col items-center justify-center text-gray-400"><Bot size={48} className="mb-2 opacity-20"/><p>請選擇設定並開始生成 ({appMode === 'trial' ? 'Deep Mock Engine' : 'Gemini Engine'})</p></div>}
+                                    </div>
+                                </Card>
+                            )}
+
+                            {/* --- 2. Rewrite View --- */}
+                            {activeTab === 'rewrite' && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-full">
+                                    <Card title="原始文本輸入" icon={FileText} className="min-h-[500px] md:h-full">
+                                        <div className="flex flex-col h-full gap-4"><textarea className="w-full flex-1 p-4 bg-gray-50 rounded-lg border-none resize-none focus:ring-2 focus:ring-[#006699]" placeholder="輸入文字..." value={rewriteInput} onChange={e => setRewriteInput(e.target.value)}/><Button onClick={handleRewrite} disabled={isRewriting} variant={appMode==='trial'?'trial':'primary'}>{isRewriting ? '處理中...' : '開始改寫'}</Button></div>
+                                    </Card>
+                                    <Card title="AI 改寫分析" icon={Sparkles} className="h-full border-[#FFB347]/30">
+                                        <div className="h-full relative">{rewriteResult ? <div className="bg-[#FFF9F2] p-5 rounded-xl border border-[#FFB347]/20 shadow-sm animate-fade-in"><div className="font-bold text-[#b37400] mb-2 flex items-center gap-1"><Star size={12} fill="currentColor"/> 改寫結果 ({rewriteResult.tone})</div><div className="text-xl font-bold text-gray-800 leading-relaxed">{rewriteResult.text}</div></div> : <div className="h-full flex flex-col items-center justify-center text-gray-300"><ArrowRight size={48} className="mb-4 opacity-20"/><p>等待輸入...</p></div>}</div>
+                                    </Card>
+                                </div>
+                            )}
+
+                            {/* --- 3. QA View --- */}
+                            {activeTab === 'qa' && (
+                                <Card title={`問答助手：${selectedTheme.name}`} icon={MessageCircle} className="min-h-[500px] md:h-full" noPadding>
+                                    <div className="flex-1 p-4 overflow-y-auto space-y-6">
+                                        {qaMessages.map((msg, i) => (
+                                            <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                                {msg.role === 'ai' && <div className="w-8 h-8 rounded-full bg-[#FFB347] flex items-center justify-center text-white mr-2 mt-1 shadow-sm"><Bot size={16}/></div>}
+                                                <div className={`max-w-[85%] ${msg.role === 'user' ? 'ml-auto' : ''}`}>
+                                                    {msg.type === 'text' ? <div className={`p-4 rounded-2xl shadow-sm text-sm ${msg.role === 'user' ? 'bg-[#006699] text-white rounded-br-none' : 'bg-white text-gray-700 border border-gray-200 rounded-bl-none'}`}>{msg.text}</div> : 
+                                                    <div className="bg-white rounded-2xl rounded-bl-none border border-gray-200 shadow-md overflow-hidden animate-fade-in"><div className="bg-[#FFF9F2] p-4 border-b border-[#FFB347]/10"><h4 className="font-bold text-gray-800 mb-2 flex items-center gap-2"><CheckCircle2 size={16} className="text-green-500"/> 回答</h4><p className="text-gray-700 text-sm leading-relaxed">{msg.data.answer}</p></div><div className="p-4 grid gap-4"><div><h5 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-1"><Globe size={12}/> 文化小補帖</h5><div className="bg-gray-50 p-3 rounded-lg text-sm text-gray-600 border border-gray-100">{msg.data.culture_note}</div></div></div></div>}
+                                                </div>
+                                            </div>
+                                        ))}
+                                        {isQAing && <div className="flex justify-start"><div className="bg-gray-100 p-3 rounded-2xl text-gray-400 text-sm animate-pulse">Thinking...</div></div>}
+                                    </div>
+                                    <div className="p-4 bg-white border-t border-gray-100 flex gap-2"><input type="text" value={qaInput} onChange={(e) => setQaInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleQASend()} placeholder="輸入問題..." className="flex-1 border border-gray-300 rounded-full px-4 py-2 focus:outline-none focus:border-[#006699] focus:ring-1 focus:ring-[#006699] shadow-inner"/><Button onClick={() => handleQASend()} disabled={isQAing} className="rounded-full w-10 h-10 p-0 shadow-lg"><Send size={18}/></Button></div>
+                                </Card>
+                            )}
+
+                            {/* --- 4. Assistant View --- */}
+                            {activeTab === 'assistant' && (
+                                <Card className={`h-full border-t-4 ${selectedAssistant.id==='wang' ? 'border-blue-500' : 'border-orange-500'}`} noPadding>
+                                    <div className="bg-white p-4 border-b border-gray-100 flex items-center gap-3">
+                                        <div className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl border-2 border-white shadow-sm ${selectedAssistant.color}`}>{selectedAssistant.avatar}</div>
+                                        <div><div className="font-bold text-gray-800">{selectedAssistant.name}</div><div className="text-xs text-gray-500">{selectedAssistant.style}</div></div>
+                                    </div>
+                                    <div className="flex-1 p-6 overflow-y-auto space-y-6 bg-[#f8f9fa]">
+                                        {chatMessages.map((msg, i) => (
+                                            <div key={i} className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
+                                                {msg.role === 'ai' && <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-sm">{selectedAssistant.avatar}</div>}
+                                                <div className={`max-w-[70%] p-3.5 rounded-2xl text-sm leading-relaxed shadow-sm ${msg.role === 'user' ? 'bg-gray-800 text-white' : 'bg-white text-gray-700 border border-gray-200'}`}>{msg.text}</div>
+                                            </div>
+                                        ))}
+                                        {isChatting && <div className="flex gap-3"><div className="w-8 h-8 rounded-full bg-gray-200"/><div className="bg-gray-100 p-3 rounded-2xl text-xs text-gray-400">Typing...</div></div>}
+                                    </div>
+                                    <div className="p-4 bg-white border-t border-gray-200 relative"><input type="text" value={chatInput} onChange={(e) => setChatInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleChatSend()} placeholder={`傳送訊息給${selectedAssistant.name}...`} className="w-full bg-gray-100 rounded-xl px-4 py-3 pr-12 focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#006699] transition-all"/><button onClick={handleChatSend} disabled={isChatting} className="absolute right-6 top-6 p-1.5 text-gray-400 hover:text-[#006699]"><Send size={20}/></button></div>
+                                </Card>
+                            )}
+
+                            {/* --- 5. Multimodal View --- */}
+                            {activeTab === 'multimodal' && (
+                                <div className="grid grid-cols-12 gap-6 h-full">
+                                    <div className="col-span-8 flex flex-col gap-6">
+                                        <Card className="flex-1 bg-black text-white relative flex items-center justify-center overflow-hidden group border-0 shadow-xl">
+                                            <img key={mmScenario.id} src={`https://source.unsplash.com/800x600/?${mmScenario.keyword},taiwan`} alt="Context" className="absolute inset-0 w-full h-full object-cover opacity-70 animate-ken-burns transition-opacity duration-1000"/>
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"/>
+                                            <div className="z-20 text-center px-8 relative">
+                                                <div className="inline-block p-4 rounded-full bg-white/10 backdrop-blur-md mb-4 border border-white/20 text-4xl shadow-lg animate-fade-in">{mmScenario.icon}</div>
+                                                <h2 className="text-4xl font-bold mb-2 text-white drop-shadow-md tracking-wide">{mmScenario.title}</h2>
+                                                <p className="text-gray-200 text-lg mb-8 font-light">{mmScenario.prompt}</p>
+                                                {!mmData ? <Button onClick={handleMmGenerate} disabled={isMmGen} className="mx-auto bg-[#FFB347] hover:bg-[#ff9f1a] text-gray-900 border-0 shadow-[0_0_20px_rgba(255,179,71,0.5)] transition-all hover:scale-105 px-8 py-3 text-lg font-bold">{isMmGen ? <><Loader2 className="animate-spin mr-2"/> 分析情境中...</> : <><Camera className="mr-2" size={20}/> 拍攝情境 & 生成教材</>}</Button> : <div className="animate-fade-in flex gap-3 justify-center"><Button onClick={() => setMmData(null)} className="bg-white/20 hover:bg-white/30 text-white border-white/50 backdrop-blur-md">重新拍攝</Button></div>}
+                                            </div>
+                                        </Card>
+                                        <Card title={mmData ? "AI 生成學習內容 (Generated Content)" : "等待生成..."} icon={FileText} className="h-1/2 overflow-hidden">
+                                            {mmData ? (
+                                                <div className="h-full flex flex-col animate-fade-in">
+                                                    <div className="flex gap-2 mb-4 overflow-x-auto p-1">{mmData.visual_tags?.map((tag, i) => <span key={i} className="text-xs bg-blue-50 text-[#006699] px-2 py-1 rounded-full border border-blue-100 flex items-center gap-1 whitespace-nowrap"><Eye size={10}/> {tag}</span>)}</div>
+                                                    <div className="flex-1 overflow-y-auto space-y-4 pr-2">{mmData.script.map((line, i) => <div key={i} className="flex gap-4 p-3 rounded-lg hover:bg-gray-50 transition-colors"><div className={`font-bold w-12 shrink-0 text-right ${line.speaker.includes('我') || line.speaker==='A' ? 'text-[#006699]' : 'text-[#FFB347]'}`}>{line.speaker}</div><div className="text-gray-700 text-lg leading-relaxed">{line.text}</div></div>)}</div>
+                                                    {mmData.culture_note && <div className="mt-4 p-3 bg-[#FFF4E6] rounded-lg border border-[#FFB347]/30 text-sm text-[#b37400] flex gap-2"><Lightbulb size={16} className="shrink-0 mt-0.5"/><div>{mmData.culture_note}</div></div>}
+                                                </div>
+                                            ) : <div className="h-full flex flex-col items-center justify-center text-gray-300"><ImageIcon size={48} className="mb-4 opacity-20"/><p>點擊上方按鈕，AI 將為您生成情境對話</p></div>}
+                                        </Card>
+                                    </div>
+                                    <div className="col-span-4 flex flex-col gap-4">
+                                        <Card title="難度設定" icon={Settings}>
+                                            <div className="flex gap-2 flex-wrap">{LEVELS.map(l => <button key={l} onClick={() => setGenLevel(l)} className={`flex-1 py-1.5 px-2 rounded text-sm font-bold border transition-all ${genLevel === l ? 'bg-[#006699] text-white border-[#006699]' : 'bg-white text-gray-500 border-gray-200 hover:border-gray-400'}`}>{l}</button>)}</div>
+                                        </Card>
+                                        <Card title="情境設置" icon={Sliders} className="flex-1">
+                                            <div className="space-y-4">
+                                                <div><label className="text-xs font-bold text-gray-500 mb-2 block uppercase tracking-wider">顯示模式</label><div className="flex bg-gray-100 p-1 rounded-lg"><button className="flex-1 py-1.5 rounded-md text-xs font-bold bg-white text-gray-800 shadow-sm">圖文並茂</button><button className="flex-1 py-1.5 rounded-md text-xs font-bold text-gray-500 hover:text-gray-700">純聽力</button></div></div>
+                                                <div className="pt-4 border-t border-gray-100"><label className="text-xs font-bold text-gray-500 mb-2 block uppercase tracking-wider">語速</label><input type="range" min="0.5" max="1.5" step="0.1" defaultValue="1" className="w-full accent-[#006699] h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/><div className="flex justify-between text-[10px] text-gray-400 mt-1"><span>0.5x</span><span>Normal</span><span>1.5x</span></div></div>
+                                                <div className="pt-4 border-t border-gray-100 space-y-2"><Button variant="outline" className="w-full justify-start" disabled={!mmData}><Volume2 size={16} className="mr-2"/> 播放完整對話</Button><Button variant="outline" className="w-full justify-start" disabled={!mmData}><Mic size={16} className="mr-2"/> 跟讀練習 (錄音)</Button></div>
+                                            </div>
+                                        </Card>
+                                    </div>
+                                </div>
+                            )}
+
+                        </div>
+                    </main>
+
+
+{/* === 手機版底部導覽列 (Page 3) === */}
+<div className="lg:hidden fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 flex justify-around items-center p-2 z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+    {[
+        { id: 'generate', label: '生成', icon: PenTool },
+        { id: 'rewrite', label: '改寫', icon: RefreshCw },
+        { id: 'qa', label: '問答', icon: MessageCircle },
+        { id: 'assistant', label: '助教', icon: Bot },
+        { id: 'multimodal', label: '多模態', icon: Headphones }
+    ].map((item) => (
+        <button 
+            key={item.id} 
+            onClick={() => setActiveTab(item.id)} 
+            className={`flex flex-col items-center justify-center w-full py-1 ${activeTab === item.id ? 'text-[#006699]' : 'text-gray-400'}`}
+        >
+            <item.icon size={20} />
+            <span className="text-[10px] mt-1 font-medium">{item.label}</span>
+        </button>
+    ))}
+</div>
+
+
+
+                </div>
+            );
+        }
+
+        const root = createRoot(document.getElementById('root'));
+        root.render(<HuaYuAIApp />);
+    </script>
+</body>
+</html>

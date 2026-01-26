@@ -1,0 +1,1329 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>華語 AI 百寶箱 - 您的專屬中文學習空間</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Markdown Parser for AI responses -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
+        
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #fdfbf7;
+        }
+
+        /* 顏色定義 */
+        .text-brand-orange { color: #FF8C00; }
+        .bg-brand-orange { background-color: #FF8C00; }
+        .hover-bg-brand-orange:hover { background-color: #e67e00; }
+        
+        .text-brand-blue { color: #006699; }
+        .bg-brand-blue { background-color: #006699; }
+        .hover-bg-brand-blue:hover { background-color: #005580; }
+
+        /* 動畫 */
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 隱藏滾動條但保持功能 */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* 聊天氣泡樣式 */
+        .chat-bubble {
+            max-width: 80%;
+            padding: 10px 15px;
+            border-radius: 15px;
+            margin-bottom: 10px;
+            position: relative;
+            line-height: 1.5;
+        }
+        .chat-user {
+            background-color: #e0f2fe; /* sky-100 */
+            color: #0c4a6e; /* sky-900 */
+            align-self: flex-end;
+            border-bottom-right-radius: 2px;
+        }
+        .chat-ai {
+            background-color: #fff;
+            border: 1px solid #e5e7eb;
+            color: #374151;
+            align-self: flex-start;
+            border-bottom-left-radius: 2px;
+        }
+        .chat-ai p { margin-bottom: 0.5em; }
+        .chat-ai p:last-child { margin-bottom: 0; }
+
+        /* 改寫標記樣式 */
+        .highlight-change {
+            background-color: #dbeafe; /* blue-100 */
+            color: #1e40af; /* blue-800 */
+            font-weight: bold;
+            padding: 0 2px;
+            border-radius: 2px;
+        }
+
+        /* Modal Overlay */
+        .modal-overlay {
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+
+        /* Switch Toggle */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #68D391;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #68D391;
+        }
+    </style>
+</head>
+<body class="text-slate-800 flex flex-col min-h-screen">
+
+    <!-- 1. 頂部導覽列 NavBar -->
+    <nav class="bg-white shadow-sm sticky top-0 z-50 border-b border-gray-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <!-- Left: Logo & Menu -->
+                <div class="flex items-center gap-6">
+
+
+                    <div class="flex items-center gap-2 cursor-pointer" onclick="navigateTo('home')">
+                        <div class="bg-brand-orange text-white p-2 rounded-lg">
+                            <i class="fa-solid fa-book-open"></i>
+                        </div>
+                        <span class="font-bold text-xl tracking-wide hidden lg:block">華語 AI 百寶箱
+
+</span>
+<a href="index.html" class="flex items-center gap-2 mr-4 text-slate-600 hover:text-orange-500 font-bold no-underline">
+    <span class="text-x1">🏠</span>
+    <span class="hidden md:inline">回首頁</span>
+</a>
+
+                        <span class="font-bold text-xl tracking-wide lg:hidden">華語 AI</span>
+                    </div>
+                    
+                    <!-- Desktop Menu -->
+                    <div class="hidden md:flex space-x-1">
+                        <button onclick="navigateTo('generator')" class="px-3 py-2 rounded-md text-sm font-medium text-slate-600 hover:text-brand-orange hover:bg-orange-50 transition-colors">
+                            <i class="fa-solid fa-pen-nib mr-1"></i> 文本生成
+                        </button>
+                        <button onclick="navigateTo('rewrite')" class="px-3 py-2 rounded-md text-sm font-medium text-slate-600 hover:text-brand-orange hover:bg-orange-50 transition-colors">
+                            <i class="fa-solid fa-arrows-rotate mr-1"></i> 文本改寫
+                        </button>
+                        <button onclick="navigateTo('qa')" class="px-3 py-2 rounded-md text-sm font-medium text-slate-600 hover:text-brand-orange hover:bg-orange-50 transition-colors">
+                            <i class="fa-solid fa-circle-question mr-1"></i> 問答延伸
+                        </button>
+                         <button onclick="navigateTo('assistant')" class="px-3 py-2 rounded-md text-sm font-medium text-slate-600 hover:text-brand-orange hover:bg-orange-50 transition-colors">
+                            <i class="fa-solid fa-robot mr-1"></i> AI 助教
+                        </button>
+                        <button onclick="navigateTo('multimodal')" class="px-3 py-2 rounded-md text-sm font-medium text-slate-600 hover:text-brand-orange hover:bg-orange-50 transition-colors">
+                            <i class="fa-solid fa-shapes mr-1"></i> 多模態學習
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right: Mode Switch & Settings -->
+                <div class="flex items-center gap-4">
+                    
+                    <!-- Mode Toggle -->
+                    <div class="flex items-center bg-gray-100 rounded-full p-1 cursor-pointer" onclick="toggleAppMode()">
+                        <div id="mode-trial-pill" class="px-3 py-1 rounded-full text-xs font-bold transition-all bg-white text-green-600 shadow-sm">
+                            <i class="fa-solid fa-bolt"></i> 體驗版
+                        </div>
+                        <div id="mode-api-pill" class="px-3 py-1 rounded-full text-xs font-bold text-gray-400 transition-all">
+                            <i class="fa-solid fa-brain"></i> 正式版
+                        </div>
+                    </div>
+
+                    <!-- Settings Button (Only active in Full Mode logic, but always visible for access) -->
+                    <button onclick="openSettings()" class="text-slate-400 hover:text-brand-orange transition-colors relative" title="設定 API Key">
+                        <i class="fa-solid fa-gear text-lg"></i>
+                        <span id="api-status-dot" class="hidden absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
+                    </button>
+
+                    <div class="h-6 w-px bg-gray-200 hidden md:block"></div>
+                    
+                    <div class="hidden md:flex items-center gap-3">
+                        <button class="text-slate-500 hover:text-slate-800 font-bold text-sm">EN</button>
+                        <button class="bg-brand-blue hover-bg-brand-blue text-white px-4 py-1.5 rounded-md text-sm font-medium shadow-sm transition-colors">登入</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="hidden fixed inset-0 z-[100] modal-overlay flex items-center justify-center fade-in">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 m-4 transform transition-all">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-key text-brand-orange"></i> 正式版設定
+                </h3>
+                <button onclick="closeSettings()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-4">
+                <div class="bg-blue-50 p-4 rounded-lg text-sm text-blue-800 mb-4">
+                    <i class="fa-solid fa-circle-info mr-1"></i> 正式版使用 <strong>Gemini AI</strong>，可針對任何主題生成無限內容。請輸入您的 API Key 以啟用。
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-2">Gemini API Key</label>
+                    <div class="relative">
+                        <input type="password" id="api-key-input" class="w-full border border-gray-300 rounded-lg pl-4 pr-10 py-2 focus:ring-2 focus:ring-brand-orange focus:border-transparent outline-none" placeholder="請輸入您的 API Key">
+                        <button onclick="toggleKeyVisibility()" class="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600">
+                            <i class="fa-solid fa-eye" id="eye-icon"></i>
+                        </button>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2">
+                        Key 僅儲存於您的瀏覽器，不會上傳。
+                        <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-brand-blue hover:underline">取得免費 Key</a>
+                    </p>
+                </div>
+            </div>
+
+            <div class="mt-8 flex justify-end gap-3">
+                <button onclick="closeSettings()" class="px-4 py-2 text-slate-500 hover:text-slate-700 font-medium">取消</button>
+                <button onclick="saveApiKey()" class="px-6 py-2 bg-brand-orange hover-bg-brand-orange text-white rounded-lg font-bold shadow-sm transition-transform active:scale-95">
+                    儲存並啟用正式版
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. 頁面內容容器 (SPA Views) -->
+    <main id="app-container" class="flex-grow pb-24">
+        
+        <!-- View 1: 首頁 (Home) -->
+        <div id="view-home" class="fade-in">
+            <!-- Hero Section -->
+            <div class="bg-white overflow-hidden">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24 grid md:grid-cols-2 gap-12 items-center">
+                    <div>
+                        <div class="inline-flex items-center px-3 py-1 rounded-full bg-orange-100 text-brand-orange text-xs font-bold mb-4">
+                            <i class="fa-solid fa-star mr-1"></i> 全新升級：雙引擎模式
+                        </div>
+                        <h1 class="text-4xl md:text-5xl font-extrabold text-slate-900 leading-tight mb-6">
+                            用 AI 打造你的<br>
+                            <span class="text-brand-orange">專屬中文學習空間</span>
+                        </h1>
+                        <p class="text-lg text-slate-500 mb-8 leading-relaxed">
+                            無論是快速備課的<span class="font-bold text-green-600">體驗版</span>，還是深度客製的<span class="font-bold text-purple-600">正式版</span>，都能在 30 秒內生成最適合您等級的教材。
+                        </p>
+                        <div class="flex flex-col sm:flex-row gap-4">
+                            <button onclick="navigateTo('generator')" class="px-8 py-4 bg-brand-orange hover-bg-brand-orange text-white rounded-lg font-bold text-lg shadow-md transition-transform transform hover:-translate-y-1">
+                                <i class="fa-solid fa-wand-magic-sparkles mr-2"></i> 開始使用
+                            </button>
+                            <button onclick="navigateTo('library')" class="px-8 py-4 bg-white border-2 border-slate-200 text-slate-700 hover:border-brand-blue hover:text-brand-blue rounded-lg font-bold text-lg transition-colors">
+                                <i class="fa-solid fa-layer-group mr-2"></i> 查看分級標準
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Hero Image / Mockup -->
+                    <div class="relative">
+                        <div class="absolute -top-4 -right-4 w-24 h-24 bg-orange-100 rounded-full opacity-50 z-0"></div>
+                        <div class="absolute -bottom-4 -left-4 w-32 h-32 bg-blue-100 rounded-full opacity-50 z-0"></div>
+                        <div class="relative z-10 bg-white rounded-2xl shadow-xl border border-gray-100 p-6 transform rotate-2 hover:rotate-0 transition-all duration-500">
+                            <div class="flex items-center gap-2 mb-4 border-b border-gray-100 pb-2">
+                                <div class="w-3 h-3 rounded-full bg-red-400"></div>
+                                <div class="w-3 h-3 rounded-full bg-yellow-400"></div>
+                                <div class="w-3 h-3 rounded-full bg-green-400"></div>
+                                <span id="hero-badge" class="ml-auto text-xs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded">⚡ 體驗版模式</span>
+                            </div>
+                            <div class="space-y-3">
+                                <div class="p-3 bg-orange-50 border-l-4 border-brand-orange rounded-r-md">
+                                    <p class="text-xs text-orange-600 font-bold mb-1">情境：看醫生 (B1)</p>
+                                    <p class="text-slate-800 text-sm">自從昨天淋雨回家後，我就開始不斷咳嗽，喉嚨也腫起來了。</p>
+                                </div>
+                                <div class="p-3 bg-gray-50 border-l-4 border-gray-300 rounded-r-md opacity-75">
+                                    <p class="text-slate-800 text-sm">醫生建議我最近飲食要清淡一點，避免吃油炸或辛辣的食物。</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Features -->
+            <div class="bg-gray-50 py-16">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="grid md:grid-cols-4 gap-6">
+                        <!-- Card 1 -->
+                        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow cursor-pointer" onclick="navigateTo('generator')">
+                            <div class="w-12 h-12 bg-orange-100 text-brand-orange rounded-lg flex items-center justify-center mb-4 text-xl">
+                                <i class="fa-solid fa-pen-nib"></i>
+                            </div>
+                            <h3 class="font-bold text-lg mb-2">文本生成</h3>
+                            <p class="text-sm text-slate-500">選主題 × 選等級，產出 4 種句子變化。正式版支援無限創意生成。</p>
+                        </div>
+                        <!-- Card 2 -->
+                        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow cursor-pointer" onclick="navigateTo('rewrite')">
+                            <div class="w-12 h-12 bg-blue-100 text-brand-blue rounded-lg flex items-center justify-center mb-4 text-xl">
+                                <i class="fa-solid fa-arrows-rotate"></i>
+                            </div>
+                            <h3 class="font-bold text-lg mb-2">文本改寫</h3>
+                            <p class="text-sm text-slate-500">調整難度與風格。正式版可進行深度潤飾與語氣轉換。</p>
+                        </div>
+                        <!-- Card 3 -->
+                        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow cursor-pointer" onclick="navigateTo('assistant')">
+                            <div class="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-lg flex items-center justify-center mb-4 text-xl">
+                                <i class="fa-solid fa-robot"></i>
+                            </div>
+                            <h3 class="font-bold text-lg mb-2">AI 助教</h3>
+                            <p class="text-sm text-slate-500">體驗版提供基礎問答，正式版則有 Gemini 2.5 全能助教在線。</p>
+                        </div>
+                        <!-- Card 4 -->
+                        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow cursor-pointer" onclick="navigateTo('multimodal')">
+                            <div class="w-12 h-12 bg-pink-100 text-pink-600 rounded-lg flex items-center justify-center mb-4 text-xl">
+                                <i class="fa-solid fa-shapes"></i>
+                            </div>
+                            <h3 class="font-bold text-lg mb-2">多模態學習</h3>
+                            <p class="text-sm text-slate-500">正式版獨家功能：AI 即時生成視覺描述與對話腳本。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Topics Grid -->
+            <div class="bg-white py-16">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <h2 class="text-2xl font-bold text-center mb-10">涵蓋十大生活與專業主題</h2>
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-4" id="topic-grid">
+                        <!-- JS will populate this -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- View 2: 文本生成工作室 (Generator) -->
+        <div id="view-generator" class="hidden fade-in min-min-min-min-min-min-min-min-min-min-min-h-[calc(100vh-64px)] h-auto h-auto h-auto h-auto h-auto h-auto h-auto h-auto h-auto h-auto h-auto overflow-hidden">
+            <div class="flex flex-col md:flex-row h-full max-w-7xl mx-auto">
+                <!-- Left Sidebar: Settings -->
+                <div class="w-full md:w-1/3 bg-white border-r border-gray-200 flex flex-col h-full">
+                    <div class="p-6 border-b border-gray-100">
+                        <h2 class="font-bold text-lg flex items-center gap-2 text-slate-800">
+                            <i class="fa-solid fa-sliders text-slate-400"></i> 設定條件
+                        </h2>
+                    </div>
+                    <div class="flex-1 overflow-y-auto p-6 space-y-6">
+                        <!-- Topic Selection -->
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">1. 選擇主題</label>
+                            <div class="grid grid-cols-2 gap-2" id="gen-topic-list">
+                                <!-- JS Populated -->
+                            </div>
+                        </div>
+                        <!-- Scenario Selection -->
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">2. 選擇情境</label>
+                            <div class="flex flex-wrap gap-2" id="gen-scenario-list">
+                                <!-- JS Populated -->
+                                <span class="text-sm text-gray-400 italic">請先選擇主題...</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Bottom Status -->
+                    <div class="p-4 bg-gray-50 border-t border-gray-200 text-xs text-slate-500 flex justify-between items-center">
+                        <span>目前選擇：<span id="status-selection" class="font-bold text-brand-orange">未選擇</span></span>
+                        <span id="gen-mode-badge" class="text-[10px] px-2 py-0.5 rounded bg-gray-200 text-gray-600">體驗版</span>
+                    </div>
+                </div>
+                <!-- Right Main: Output -->
+                <div class="w-full md:w-2/3 bg-gray-50 flex flex-col h-full">
+                    <!-- Top Toolbar -->
+                    <div class="bg-white p-6 border-b border-gray-200 shadow-sm z-10">
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                            <div class="col-span-1">
+                                <label class="block text-xs font-bold text-slate-500 mb-1">語言等級</label>
+                                <select id="gen-level" class="w-full border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:ring-brand-orange focus:border-brand-orange">
+                                    <option value="A1">A1 入門</option>
+                                    <option value="A2" selected>A2 初級</option>
+                                    <option value="B1">B1 中級</option>
+                                    <option value="B2">B2 中高級</option>
+                                    <option value="C1">C1 高級</option>
+                                    <option value="C6">C6 精通</option>
+                                </select>
+                            </div>
+                            <div class="col-span-1">
+                                <label class="block text-xs font-bold text-slate-500 mb-1">句型種類</label>
+                                <select id="gen-type" class="w-full border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:ring-brand-orange focus:border-brand-orange">
+                                    <option value="scenario">情境敘述</option>
+                                    <option value="experience">經驗分享</option>
+                                    <option value="suggestion">實用建議</option>
+                                    <option value="analysis">深度分析</option>
+                                </select>
+                            </div>
+                            <div class="col-span-2 flex items-end">
+                                <button onclick="handleGenerateAction()" class="w-full bg-brand-orange hover-bg-brand-orange text-white py-2 px-4 rounded-md font-bold shadow-md transition-all active:scale-95 flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-wand-magic-sparkles"></i> 立即生成
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Output Content -->
+                    <div class="flex-1 overflow-y-auto p-6" id="output-area">
+                        <!-- Empty State -->
+                        <div class="h-full flex flex-col items-center justify-center text-slate-400">
+                            <i class="fa-regular fa-file-lines text-5xl mb-4 text-slate-300"></i>
+                            <p>請設定左側條件並點擊生成</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- View 3: 詞彙句型庫 (Library) - Keep as is -->
+        <div id="view-library" class="hidden fade-in bg-gray-50 py-12">
+             <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+                <div class="text-center">
+                    <h2 class="text-3xl font-bold text-slate-900">詞彙與句型等級階梯</h2>
+                    <p class="mt-2 text-slate-500">從 A1 到 C6 的難度分布可視化</p>
+                    <button onclick="navigateTo('home')" class="mt-4 px-4 py-2 border border-gray-300 rounded-md text-sm text-gray-500 hover:bg-gray-100">
+                        <i class="fa-solid fa-arrow-left"></i> 返回首頁
+                    </button>
+                </div>
+                <!-- Levels Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                   <div class="bg-white rounded-xl shadow-sm border-t-4 border-green-500 p-5"><div class="font-bold text-2xl text-slate-800">A1-A2</div><p class="text-sm text-slate-600">基礎生存詞彙，簡單SVO句型。</p></div>
+                   <div class="bg-white rounded-xl shadow-sm border-t-4 border-blue-500 p-5"><div class="font-bold text-2xl text-slate-800">B1-B2</div><p class="text-sm text-slate-600">複句結構，具體與抽象話題討論。</p></div>
+                   <div class="bg-white rounded-xl shadow-sm border-t-4 border-orange-500 p-5"><div class="font-bold text-2xl text-slate-800">C1-C6</div><p class="text-sm text-slate-600">高階專業詞彙，跨文化比較與深度分析。</p></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- NEW: VIEW - Rewrite (文本改寫) -->
+        <div id="view-rewrite" class="hidden fade-in min-min-min-min-min-min-min-min-min-min-min-h-[calc(100vh-64px)] h-auto h-auto h-auto h-auto h-auto h-auto h-auto h-auto h-auto h-auto h-auto">
+             <div class="max-w-6xl mx-auto h-full p-4 md:p-8 flex flex-col">
+                <div class="mb-6 flex justify-between items-end">
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-arrows-rotate text-brand-blue"></i> 智能文本改寫</h2>
+                        <p class="text-sm text-slate-500 mt-1">調整文本難度、風格或潤飾語句</p>
+                    </div>
+                    <span id="rw-mode-badge" class="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded">⚡ 體驗版</span>
+                </div>
+                <div class="flex-1 flex flex-col md:flex-row gap-6 h-full">
+                    <!-- Left: Input -->
+                    <div class="flex-1 flex flex-col">
+                        <div class="bg-white p-4 rounded-t-xl border border-gray-200 border-b-0 flex justify-between items-center">
+                            <span class="font-bold text-sm text-slate-600">原始文本</span>
+                            <button class="text-xs text-brand-blue hover:underline" onclick="document.getElementById('rewrite-input').value=''">清空</button>
+                        </div>
+                        <textarea id="rewrite-input" class="flex-1 p-4 border border-gray-200 rounded-b-xl focus:ring-2 focus:ring-brand-blue focus:border-transparent resize-none bg-gray-50 text-lg" placeholder="請在此輸入中文句子，例如：「我覺得這家餐廳很好吃，但是有點貴。」"></textarea>
+                    </div>
+                    
+                    <!-- Middle: Controls -->
+                    <div class="w-full md:w-48 flex flex-col justify-center gap-4">
+                        <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 space-y-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 mb-1">目標難度</label>
+                                <select id="rewrite-level" class="w-full border-gray-300 rounded text-sm py-1.5">
+                                    <option value="easier">更簡單 (A1/A2)</option>
+                                    <option value="harder">更進階 (B2/C1)</option>
+                                    <option value="same" selected>維持難度</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 mb-1">改寫風格</label>
+                                <select id="rewrite-style" class="w-full border-gray-300 rounded text-sm py-1.5">
+                                    <option value="formal">正式書面</option>
+                                    <option value="casual">輕鬆口語</option>
+                                    <option value="polish">潤飾修正</option>
+                                </select>
+                            </div>
+                            <button onclick="handleRewriteAction()" class="w-full bg-brand-blue hover:bg-sky-700 text-white py-2 rounded-md font-bold text-sm shadow transition-colors">
+                                <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> 開始改寫
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Right: Output -->
+                    <div class="flex-1 flex flex-col">
+                         <div class="bg-white p-4 rounded-t-xl border border-gray-200 border-b-0 flex justify-between items-center bg-blue-50">
+                            <span class="font-bold text-sm text-brand-blue">改寫結果</span>
+                            <div class="flex gap-2">
+                                <span id="rewrite-badge" class="hidden text-xs bg-white text-brand-blue px-2 py-0.5 rounded border border-blue-200">Processing</span>
+                            </div>
+                        </div>
+                        <div id="rewrite-output" class="flex-1 p-6 border border-gray-200 rounded-b-xl bg-white overflow-y-auto text-slate-700 leading-relaxed text-lg">
+                            <span class="text-gray-400 italic">改寫結果將顯示於此...</span>
+                        </div>
+                        <!-- Analysis Block -->
+                        <div id="rewrite-analysis" class="hidden mt-4 p-4 bg-orange-50 border border-orange-200 rounded-xl text-sm">
+                            <h4 class="font-bold text-brand-orange mb-2"><i class="fa-solid fa-magnifying-glass"></i> AI 改寫分析</h4>
+                            <p id="rewrite-reason" class="text-slate-600">正在分析...</p>
+                        </div>
+                    </div>
+                </div>
+             </div>
+        </div>
+
+        <!-- NEW: VIEW - QA Extension (問答延伸) -->
+        <div id="view-qa" class="hidden fade-in min-min-min-min-min-min-min-min-min-min-min-h-[calc(100vh-64px)] h-auto h-auto h-auto h-auto h-auto h-auto h-auto h-auto h-auto h-auto h-auto overflow-y-auto">
+             <div class="max-w-4xl mx-auto p-4 md:p-8 space-y-8">
+                <div class="text-center">
+                    <h2 class="text-2xl font-bold text-slate-800"><i class="fa-solid fa-circle-question text-green-600"></i> 智慧問答延伸</h2>
+                    <p class="text-slate-500 mt-1 flex justify-center items-center gap-2">
+                        自動生成閱讀測驗、討論題與思考題 
+                        <span id="qa-mode-badge" class="text-[10px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded border border-green-200">⚡ 體驗版</span>
+                    </p>
+                </div>
+
+                <!-- Input Section -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <label class="block text-sm font-bold text-slate-700 mb-2">請輸入文章內容：</label>
+                    <textarea id="qa-input" class="w-full h-32 border border-gray-300 rounded-lg p-3 focus:ring-green-500 focus:border-green-500 text-base" placeholder="貼上您的課文或生成的文本..."></textarea>
+                    
+                    <div class="flex flex-wrap gap-2 md:gap-4 mt-4">
+                        <button onclick="handleQAAction('reading')" class="flex-1 py-2 px-3 border border-green-200 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 font-medium transition-colors text-sm md:text-base">
+                            <i class="fa-solid fa-book-open mr-1"></i> 閱讀測驗
+                        </button>
+                        <button onclick="handleQAAction('cloze')" class="flex-1 py-2 px-3 border border-purple-200 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 font-medium transition-colors text-sm md:text-base">
+                            <i class="fa-solid fa-pen-to-square mr-1"></i> 克漏字
+                        </button>
+                        <button onclick="handleQAAction('discussion')" class="flex-1 py-2 px-3 border border-blue-200 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 font-medium transition-colors text-sm md:text-base">
+                            <i class="fa-solid fa-comments mr-1"></i> 討論題
+                        </button>
+                        <button onclick="handleQAAction('truefalse')" class="flex-1 py-2 px-3 border border-orange-200 bg-orange-50 text-orange-700 rounded-lg hover:bg-orange-100 font-medium transition-colors text-sm md:text-base">
+                            <i class="fa-solid fa-check-double mr-1"></i> 是非題
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Output Section -->
+                <div id="qa-output" class="space-y-4 pb-8">
+                    <!-- Results will appear here -->
+                    <div class="text-center text-gray-400 py-8">
+                        請輸入文本並選擇題目類型
+                    </div>
+                </div>
+             </div>
+        </div>
+
+        <!-- NEW: VIEW - AI Assistant (AI 助教) -->
+        <div id="view-assistant" class="hidden fade-in min-min-min-min-min-min-min-min-min-min-min-h-[calc(100vh-64px)] h-auto h-auto h-auto h-auto h-auto h-auto h-auto h-auto h-auto h-auto h-auto flex flex-col">
+             <div class="flex-1 max-w-4xl w-full mx-auto p-4 flex flex-col h-full">
+                 <!-- Header -->
+                 <div class="bg-white p-4 rounded-t-xl border border-gray-200 shadow-sm flex items-center justify-between">
+                     <div class="flex items-center gap-3">
+                         <div class="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600">
+                             <i class="fa-solid fa-robot"></i>
+                         </div>
+                         <div>
+                             <h3 class="font-bold text-slate-800">AI 華語助教</h3>
+                             <p id="chat-status" class="text-xs text-green-500 flex items-center gap-1"><span class="w-2 h-2 bg-green-500 rounded-full"></span> 體驗版 (Simulated)</p>
+                         </div>
+                     </div>
+                     <button onclick="document.getElementById('chat-messages').innerHTML=''" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-trash"></i></button>
+                 </div>
+
+                 <!-- Chat Area -->
+                 <div id="chat-messages" class="flex-1 bg-gray-50 border-l border-r border-gray-200 p-4 overflow-y-auto space-y-4">
+                     <!-- Intro Message -->
+                     <div class="chat-bubble chat-ai">
+                         你好！我是你的 AI 華語助教。我可以幫你：<br>
+                         1. 解釋語法點<br>
+                         2. 糾正句子錯誤<br>
+                         3. 提供學習建議<br>
+                         請問今天想練習什麼呢？
+                     </div>
+                 </div>
+
+                 <!-- Input Area -->
+                 <div class="bg-white p-4 rounded-b-xl border border-gray-200 shadow-sm">
+                     <!-- Prompt Chips -->
+                     <div class="flex gap-2 mb-3 overflow-x-auto no-scrollbar pb-1">
+                         <button onclick="setChatInput('幫我解釋「把」字句的用法')" class="whitespace-nowrap px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded-full text-xs text-slate-600 transition-colors">解釋「把」字句</button>
+                         <button onclick="setChatInput('這句話有錯嗎？「我去了台北昨天。」')" class="whitespace-nowrap px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded-full text-xs text-slate-600 transition-colors">糾正語病</button>
+                         <button onclick="setChatInput('請給我三個關於「環保」的高級詞彙')" class="whitespace-nowrap px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded-full text-xs text-slate-600 transition-colors">擴充詞彙</button>
+                     </div>
+                     <div class="flex gap-2">
+                         <input type="text" id="chat-input" class="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="輸入訊息..." onkeypress="if(event.key === 'Enter') handleChatAction()">
+                         <button onclick="handleChatAction()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">發送</button>
+                     </div>
+                 </div>
+             </div>
+        </div>
+
+        <!-- NEW: VIEW - Multimodal (多模態學習) -->
+        <div id="view-multimodal" class="hidden fade-in min-min-min-min-min-min-min-min-min-min-min-h-[calc(100vh-64px)] h-auto h-auto h-auto h-auto h-auto h-auto h-auto h-auto h-auto h-auto h-auto overflow-y-auto bg-gray-50">
+             <div class="max-w-6xl mx-auto p-4 md:p-8">
+                <div class="text-center mb-10">
+                    <h2 class="text-3xl font-bold text-slate-800 flex justify-center items-center gap-3">
+                        <span class="bg-pink-100 text-pink-600 p-2 rounded-lg"><i class="fa-solid fa-shapes"></i></span>
+                        多模態學習中心
+                    </h2>
+                    <p class="text-slate-500 mt-2 text-lg">
+                        結合 <span class="font-bold text-pink-600">視覺圖像 (Image)</span>、<span class="font-bold text-pink-600">動態情境 (Dynamic)</span> 與 <span class="font-bold text-pink-600">AI 互動</span> 的沉浸式體驗
+                    </p>
+                    <p class="text-sm text-slate-400 mt-1">請選擇一個情境圖片，AI 將為您生成對應的學習內容：</p>
+                </div>
+
+                <!-- Scenario Selector (Updated 8 items) -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                    <!-- 1. Night Market -->
+                    <div onclick="handleMultimodalAction('night_market')" class="bg-white p-5 rounded-xl shadow-sm border border-gray-200 cursor-pointer hover:border-pink-500 hover:bg-pink-50 transition-all text-center group transform hover:-translate-y-1">
+                        <div class="text-4xl mb-3">🍜</div>
+                        <div class="font-bold text-slate-700 group-hover:text-pink-600">夜市情境</div>
+                        <div class="text-xs text-slate-400 mt-1">(殺價 / 點餐)</div>
+                    </div>
+                    <!-- 2. MRT -->
+                    <div onclick="handleMultimodalAction('mrt')" class="bg-white p-5 rounded-xl shadow-sm border border-gray-200 cursor-pointer hover:border-pink-500 hover:bg-pink-50 transition-all text-center group transform hover:-translate-y-1">
+                        <div class="text-4xl mb-3">🚇</div>
+                        <div class="font-bold text-slate-700 group-hover:text-pink-600">捷運站</div>
+                        <div class="text-xs text-slate-400 mt-1">(問路 / 買票)</div>
+                    </div>
+                    <!-- 3. Hospital -->
+                    <div onclick="handleMultimodalAction('hospital')" class="bg-white p-5 rounded-xl shadow-sm border border-gray-200 cursor-pointer hover:border-pink-500 hover:bg-pink-50 transition-all text-center group transform hover:-translate-y-1">
+                        <div class="text-4xl mb-3">🏥</div>
+                        <div class="font-bold text-slate-700 group-hover:text-pink-600">醫院櫃檯</div>
+                        <div class="text-xs text-slate-400 mt-1">(掛號 / 詢問)</div>
+                    </div>
+                    <!-- 4. Office -->
+                    <div onclick="handleMultimodalAction('office')" class="bg-white p-5 rounded-xl shadow-sm border border-gray-200 cursor-pointer hover:border-pink-500 hover:bg-pink-50 transition-all text-center group transform hover:-translate-y-1">
+                        <div class="text-4xl mb-3">💼</div>
+                        <div class="font-bold text-slate-700 group-hover:text-pink-600">辦公室會議</div>
+                        <div class="text-xs text-slate-400 mt-1">(提案 / 討論)</div>
+                    </div>
+                    <!-- 5. Immigration -->
+                    <div onclick="handleMultimodalAction('immigration')" class="bg-white p-5 rounded-xl shadow-sm border border-gray-200 cursor-pointer hover:border-pink-500 hover:bg-pink-50 transition-all text-center group transform hover:-translate-y-1">
+                        <div class="text-4xl mb-3">🛂</div>
+                        <div class="font-bold text-slate-700 group-hover:text-pink-600">移民署</div>
+                        <div class="text-xs text-slate-400 mt-1">(辦理居留證)</div>
+                    </div>
+                    <!-- 6. Bank -->
+                    <div onclick="handleMultimodalAction('bank')" class="bg-white p-5 rounded-xl shadow-sm border border-gray-200 cursor-pointer hover:border-pink-500 hover:bg-pink-50 transition-all text-center group transform hover:-translate-y-1">
+                        <div class="text-4xl mb-3">🏦</div>
+                        <div class="font-bold text-slate-700 group-hover:text-pink-600">銀行櫃檯</div>
+                        <div class="text-xs text-slate-400 mt-1">(開戶 / 匯款)</div>
+                    </div>
+                    <!-- 7. Convenience Store -->
+                    <div onclick="handleMultimodalAction('convenience_store')" class="bg-white p-5 rounded-xl shadow-sm border border-gray-200 cursor-pointer hover:border-pink-500 hover:bg-pink-50 transition-all text-center group transform hover:-translate-y-1">
+                        <div class="text-4xl mb-3">📦</div>
+                        <div class="font-bold text-slate-700 group-hover:text-pink-600">便利商店</div>
+                        <div class="text-xs text-slate-400 mt-1">(問包裹 / 服務)</div>
+                    </div>
+                    <!-- 8. Campus -->
+                    <div onclick="handleMultimodalAction('campus')" class="bg-white p-5 rounded-xl shadow-sm border border-gray-200 cursor-pointer hover:border-pink-500 hover:bg-pink-50 transition-all text-center group transform hover:-translate-y-1">
+                        <div class="text-4xl mb-3">🏫</div>
+                        <div class="font-bold text-slate-700 group-hover:text-pink-600">校園行政處</div>
+                        <div class="text-xs text-slate-400 mt-1">(詢問學費)</div>
+                    </div>
+                </div>
+
+                <!-- Generated Content -->
+                <div id="mm-loading" class="hidden text-center py-16">
+                    <i class="fa-solid fa-spinner fa-spin text-5xl text-pink-500 mb-6"></i>
+                    <p class="text-slate-600 font-bold text-lg">AI 正在解析視覺情境與建構動態腳本...</p>
+                    <p class="text-sm text-slate-400 mt-2">Generating Multimodal Content...</p>
+                </div>
+
+                <div id="mm-output" class="hidden space-y-8 pb-12">
+                    
+                    <!-- 1. Visual Context (Image-to-Text Simulation) -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-y-auto">
+                        <div class="bg-gradient-to-r from-gray-800 to-gray-900 text-white p-4 flex justify-between items-center">
+                            <h3 class="font-bold text-lg flex items-center gap-2"><i class="fa-solid fa-eye"></i> 視覺情境學習 (Visual Context)</h3>
+                            <span class="text-xs bg-gray-700 px-2 py-1 rounded">Image-to-Text</span>
+                        </div>
+                        <div class="flex flex-col md:flex-row">
+                            <!-- Visual Placeholder -->
+                            <div class="md:w-1/3 bg-gray-100 flex items-center justify-center p-8 border-b md:border-b-0 md:border-r border-gray-200">
+                                <div class="text-center">
+                                    <div class="text-6xl mb-4" id="mm-visual-icon">🖼️</div>
+                                    <p class="text-slate-500 font-bold" id="mm-scenario-display">情境圖片</p>
+                                </div>
+                            </div>
+                            <!-- AI Description -->
+                            <div class="md:w-2/3 p-6">
+                                <h4 class="font-bold text-slate-700 mb-2">AI 視覺描述：</h4>
+                                <p id="mm-visual-clues" class="text-slate-600 text-base leading-relaxed">（AI 將描述場景中的人物動作、表情、環境細節與文字訊息...）</p>
+                                <div class="mt-4 flex gap-2">
+                                    <span class="text-xs bg-pink-50 text-pink-600 px-2 py-1 rounded border border-pink-100"><i class="fa-solid fa-tag mr-1"></i>視覺關鍵詞</span>
+                                    <span class="text-xs bg-pink-50 text-pink-600 px-2 py-1 rounded border border-pink-100"><i class="fa-solid fa-tag mr-1"></i>環境線索</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. Dynamic Learning (Roleplay Script) -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                        <div class="flex justify-between items-center mb-6 border-b border-gray-100 pb-4">
+                            <h3 class="font-bold text-lg text-slate-800 flex items-center gap-2">
+                                <i class="fa-solid fa-video text-pink-500"></i> 動態模擬學習 (Dynamic Simulation)
+                            </h3>
+                            <button class="px-4 py-1.5 bg-pink-100 text-pink-600 rounded-full text-xs font-bold hover:bg-pink-200 transition-colors">
+                                <i class="fa-solid fa-volume-high mr-1"></i> 播放對話
+                            </button>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="bg-blue-50 p-4 rounded-lg border border-blue-100 text-sm text-blue-800 mb-4">
+                                <i class="fa-solid fa-circle-info mr-1"></i> 
+                                <span class="font-bold">學習重點：</span> 注意腳本中的【動作指示】，請試著在說話時配合肢體語言。
+                            </div>
+                            <div id="mm-script" class="space-y-4 font-mono text-slate-700">
+                                <!-- Script content will be injected here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. Multimodal Interactive Task -->
+                    <div class="bg-gradient-to-br from-pink-50 to-white rounded-2xl shadow-sm border border-pink-200 p-6">
+                        <h3 class="font-bold text-lg text-slate-800 mb-4 flex items-center gap-2">
+                            <i class="fa-solid fa-microphone-lines text-pink-600"></i> 多模態互動任務 (Interactive Task)
+                        </h3>
+                        <p id="mm-task" class="text-slate-700 mb-6 text-lg font-medium">（任務說明...）</p>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <button class="w-full py-4 border-2 border-dashed border-pink-300 rounded-xl text-pink-500 hover:bg-pink-50 transition-all flex flex-col items-center justify-center gap-2">
+                                <i class="fa-solid fa-microphone text-2xl"></i>
+                                <span class="font-bold">錄音回答</span>
+                            </button>
+                            <button class="w-full py-4 border-2 border-dashed border-slate-300 rounded-xl text-slate-500 hover:bg-slate-50 transition-all flex flex-col items-center justify-center gap-2">
+                                <i class="fa-solid fa-keyboard text-2xl"></i>
+                                <span class="font-bold">文字輸入</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+             </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+<div class="md:hidden fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 flex justify-around items-center p-2 z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+    <button onclick="navigateTo('generator')" class="flex flex-col items-center justify-center w-full py-1 text-slate-500 hover:text-brand-orange">
+        <i class="fa-solid fa-pen-nib text-lg"></i>
+        <span class="text-[10px] mt-1 font-bold">生成</span>
+    </button>
+    <button onclick="navigateTo('rewrite')" class="flex flex-col items-center justify-center w-full py-1 text-slate-500 hover:text-brand-orange">
+        <i class="fa-solid fa-arrows-rotate text-lg"></i>
+        <span class="text-[10px] mt-1 font-bold">改寫</span>
+    </button>
+    <button onclick="navigateTo('qa')" class="flex flex-col items-center justify-center w-full py-1 text-slate-500 hover:text-brand-orange">
+        <i class="fa-solid fa-circle-question text-lg"></i>
+        <span class="text-[10px] mt-1 font-bold">問答</span>
+    </button>
+    <button onclick="navigateTo('assistant')" class="flex flex-col items-center justify-center w-full py-1 text-slate-500 hover:text-brand-orange">
+        <i class="fa-solid fa-robot text-lg"></i>
+        <span class="text-[10px] mt-1 font-bold">助教</span>
+    </button>
+    <button onclick="navigateTo('multimodal')" class="flex flex-col items-center justify-center w-full py-1 text-slate-500 hover:text-brand-orange">
+        <i class="fa-solid fa-shapes text-lg"></i>
+        <span class="text-[10px] mt-1 font-bold">多模態</span>
+    </button>
+</div>
+    <footer class="bg-slate-800 text-slate-400 py-8 border-t border-slate-700 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p class="mb-4">© 2025 華語 AI 百寶箱 Chinese AI Toolbox | 雙模式引擎</p>
+            <div class="flex justify-center gap-6 text-sm">
+                <a href="#" class="hover:text-white transition-colors">關於我們</a>
+                <a href="#" class="hover:text-white transition-colors">使用條款</a>
+                <a href="#" class="hover:text-white transition-colors">隱私權政策</a>
+                <a href="#" class="hover:text-white transition-colors">聯絡作者</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- 1. Global State & Config ---
+        let appMode = 'trial'; // 'trial' or 'api'
+        let userApiKey = "";
+        const SYSTEM_API_KEY = ""; // Environment key if available
+        const BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent";
+
+        // --- 2. Data Models & Mock Data (For Trial Mode) ---
+        const TOPICS = [
+            { id: 'daily', name: '日常生活', icon: 'fa-house', scenarios: ['打招呼', '時間', '天氣', '買東西', '看醫生', '理髮', '找朋友'] },
+            { id: 'food', name: '飲食文化', icon: 'fa-bowl-food', scenarios: ['點餐', '台灣小吃', '飲食禁忌', '做菜', '飲料店', '夜市', '聚餐禮儀'] },
+            { id: 'transport', name: '交通出行', icon: 'fa-train-subway', scenarios: ['搭捷運', '問路', '買票', '計程車', '租車', '機場', '交通規則'] },
+            { id: 'shopping', name: '購物消費', icon: 'fa-bag-shopping', scenarios: ['殺價', '退換貨', '支付方式', '網購', '超市', '百貨公司', '伴手禮'] },
+            { id: 'work', name: '職場工作', icon: 'fa-briefcase', scenarios: ['面試', '開會', '請假', '打電話', '寫信', '同事相處', '商業談判'] },
+            { id: 'edu', name: '校園教育', icon: 'fa-graduation-cap', scenarios: ['選課', '圖書館', '考試', '社團', '住宿', '獎學金', '師生互動'] },
+            { id: 'entertain', name: '休閒娛樂', icon: 'fa-film', scenarios: ['看電影', 'KTV', '展覽', '運動', '旅遊規劃', '訂房', '景點介紹'] },
+            { id: 'health', name: '醫療健康', icon: 'fa-hospital', scenarios: ['掛號', '症狀描述', '藥局', '急診', '健康檢查', '保險', '養生'] },
+            { id: 'social', name: '人際社交', icon: 'fa-users', scenarios: ['自我介紹', '道謝道得', '讚美', '拒絕', '邀請', '送禮', '談論興趣'] },
+            { id: 'culture', name: '傳統文化', icon: 'fa-torii-gate', scenarios: ['節日', '習俗', '書法', '茶道', '歷史故事', '宗教', '神話'] },
+        ];
+
+        let state = {
+            currentTopic: null,
+            currentScenario: null
+        };
+
+        const VOCAB_POOL = {
+            time: ["昨天", "上週末", "前幾天", "最近", "今天早上", "小時候", "放假的時候", "星期天"],
+            person: ["朋友", "家人", "同事", "同學", "室友", "鄰居", "老師"],
+            adj_pos: ["熱鬧", "有趣", "漂亮", "方便", "特別", "舒服", "親切", "專業", "乾淨"],
+            adj_neg: ["吵雜", "無聊", "髒亂", "擁擠", "危險", "麻煩", "昂貴", "不方便"],
+            verb: ["逛逛", "看看", "體驗", "享受", "參觀", "了解", "討論", "觀察"],
+            feeling: ["開心", "滿意", "驚訝", "放鬆", "感動", "煩惱", "後悔", "期待"]
+        };
+
+        const MOCK_TEMPLATES = {
+            'A1': { 'scenario': ["這裡是{scenario}，很多人喜歡來這裡。", "他在{scenario}，他覺得很{feeling}。", "這是我的{scenario}，非常{adj_pos}。", "{time}，我們去{scenario}看一看。"], 'experience': ["我和{person}去{scenario}，我很{feeling}。", "{time}我在{scenario}，那裡很{adj_pos}。", "我喜歡去{scenario}，因為很{adj_pos}。", "我不常去{scenario}，但是我想去。"], 'suggestion': ["你可以去{scenario}，那裡很{adj_pos}。", "請不要在{scenario}大聲說話。", "我們一起去{scenario}吧！", "去{scenario}的時候，要小心一點。"], 'analysis': ["{scenario}是一個{adj_pos}的地方。", "因為有{scenario}，所以我們很方便。", "大家都說{scenario}很{adj_pos}。", "{scenario}裡面有很多東西。"] },
+            'A2': { 'scenario': ["{time}，{scenario}裡面已經有很多人了，看起來好{adj_pos}。", "聽說這附近的{scenario}非常有名，大家都想去看看。", "雖然{scenario}不大，但是環境很{adj_pos}，我很喜歡。", "從我家走路到{scenario}只要十分鐘，真的很方便。"], 'experience': ["{time}我和{person}約在{scenario}見面，我們聊得很{feeling}。", "第一次去{scenario}的時候，我覺得那裡有點{adj_neg}。", "每次去{scenario}，我都會買很多東西，真的好{feeling}。", "雖然我很累，但是為了陪{person}，我還是去了{scenario}。"], 'suggestion': ["如果你覺得無聊，不如去{scenario}走走，或許會覺得很{adj_pos}。", "去{scenario}之前，最好先問問{person}，看他們有沒有空。", "建議你早點出門去{scenario}，不然可能會很{adj_neg}。", "別忘了帶相機去{scenario}，那邊的風景很{adj_pos}。"], 'analysis': ["對很多人來說，{scenario}是生活中不可缺少的地方。", "因為交通方便，所以這家{scenario}生意特別好。", "我覺得{scenario}的環境越來越{adj_pos}了。", "在{scenario}工作的人，通常都很辛苦。"] },
+            'B1': { 'scenario': ["走進{scenario}，你會發現這裡的氣氛非常{adj_pos}，到處都是歡笑聲。", "這家{scenario}的設計很特別，吸引了許多像我這樣的年輕人。", "每到{time}，{scenario}總是擠滿了人，一位難求。", "位於市中心的{scenario}，不僅交通便利，服務也很{adj_pos}。"], 'experience': ["還記得{time}去{scenario}的經驗，那真是一次難忘的回憶。", "自從搬家後，我就很少有機會去{scenario}了，真令人懷念。", "在{scenario}發生的那件事，讓我感到非常{feeling}。", "雖然去{scenario}花了我不少時間，但我覺得這一切都是值得的。"], 'suggestion': ["若你想深入了解當地文化，我強烈推薦你去一趟{scenario}。", "在前往{scenario}之前，最好先上網查詢一下評價，以免踩雷。", "如果你不趕時間，不妨在{scenario}多待一會兒，感受一下那裡的氛圍。", "建議你避開尖峰時段去{scenario}，這樣才能有更{adj_pos}的體驗。"], 'analysis': ["{scenario}之所以受歡迎，主要是因為它滿足了現代人對於便利的需求。", "隨著經濟的發展，{scenario}在我們的生活中扮演著越來越重要的角色。", "相較於其他地方，{scenario}提供了更多樣化的選擇與服務。", "我們可以從{scenario}的變化，觀察到這個城市的發展軌跡。"] },
+            'B2': { 'scenario': ["儘管外頭下著傾盆大雨，{scenario}內依然熙熙攘攘，絲毫不受天氣影響。", "{scenario}的空間規劃融合了傳統與現代元素，展現出獨特的建築美學。", "放眼望去，{scenario}周圍高樓林立，形成了一幅繁華的都市景象。", "在這座{scenario}裡，你可以聽到各種不同的語言，宛如一個小型聯合國。"], 'experience': ["回想起那段在{scenario}實習的日子，雖然辛苦，卻是我人生中寶貴的資產。", "經歷了在{scenario}的突發狀況後，我學會了如何更冷靜地處理危機。", "那次在{scenario}的偶遇，竟然改變了我原本的人生規劃，真是不可思議。", "對我而言，{scenario}不僅是一個場所，更承載了我無數的青春回憶。"], 'suggestion': ["針對初次造訪{scenario}的遊客，我建議可以先索取一份導覽地圖。", "在享受{scenario}便利服務的同時，我們也應該遵守相關的規範與禮儀。", "與其走馬看花，不如花點時間在{scenario}做深度的探索與體驗。", "若遇到任何問題，別猶豫，直接向{scenario}的服務台尋求協助。"], 'analysis': ["{scenario}的興起，反映了當代社會對於生活品質與便利性的高度追求。", "從市場行銷的角度來看，{scenario}成功的關鍵在於精準的目標客群定位。", "儘管{scenario}帶來了經濟效益，但也引發了關於環境保護的爭議。", "透過分析{scenario}的營運模式，我們可以歸納出幾項值得學習的成功要素。"] },
+            'C1': { 'scenario': ["踏入這座充滿歷史底蘊的{scenario}，彷彿穿越時空，置身於那輝煌的年代。", "{scenario}內部錯綜複雜的結構與精緻的裝飾，無不展現出工匠們的巧奪天工。", "在这{scenario}的靜謐角落，隱藏著許多不為人知的故事，等待著有心人去發掘。", "夜幕低垂，華燈初上，{scenario}搖身一變，展現出與白天截然不同的迷人風采。"], 'experience': ["歷經滄桑，當我再次佇立於{scenario}前，內心湧起一股難以言喻的感慨。", "在{scenario}的那場演講，不僅啟發了我的思維，更重塑了我的價值觀。", "那段致力於{scenario}保存工作的歲月，是我對這片土地最深情的告白。", "縱使時光流逝，{scenario}在我腦海中的影像依然清晰如昨，歷歷在目。"], 'suggestion': ["鑑於{scenario}的特殊性，參訪者應抱持著謙卑與尊重的態度，細細品味。", "若欲探究{scenario}的深層意涵，建議詳讀相關文獻，方能一窺堂奧。", "在推廣{scenario}觀光的同時，切勿忽視對當地生態與文化的衝擊。", "對於有意從事{scenario}相關行業者，持續進修與跨領域學習是不可或缺的。"], 'analysis': ["{scenario}作為一種文化符號，其背後隱含著複雜的社會階級與權力運作機制。", "探討{scenario}的演變歷程，實則是在梳理一部縮影版的社會發展史。", "在全球化的浪潮下，{scenario}如何保有其在地特色而不致流於同質化，是一大考驗。", "從美學與哲學的觀點審視{scenario}，我們能更深刻地理解人與空間的互動關係。"] },
+            'C6': { 'scenario': ["在那肅穆的{scenario}長廊盡頭，光影交錯間，隱喻著宇宙運行的奧秘與無常。", "{scenario}巍峨聳立於天地之間，宛如一座沉默的豐碑，見證著世代的興衰更迭。", "置身於{scenario}的宏大敘事中，個體的存在顯得如此渺小，卻又如此真實。", "這座{scenario}不僅是物質的堆砌，更是人類精神意志在物理空間上的極致投射。"], 'experience': ["回首那段與{scenario}共生共榮的歲月，我不禁感嘆命運的撥弄與意志的韌性。", "在與{scenario}的靈性對話中，我逐漸參透了「天人合一」的哲學境界。", "那次在{scenario}的頓悟，如醍醐灌頂般，瞬間解開了我心中糾結多年的枷鎖。", "縱觀一生，我與{scenario}的緣分，或許早已在冥冥之中註定，無法切割。"], 'suggestion': ["與其在{scenario}的表象中迷失，不如向內觀照，尋求心靈與空間的共鳴。", "對於{scenario}的保存與活化，應跳脫傳統思維，引入跨學科的整合視角。", "在面對{scenario}所觸發的倫理兩難時，我們應回歸人性的本質進行思辨。", "欲臻至{scenario}鑑賞的化境，需具備深厚的人文素養與敏銳的審美直覺。"], 'analysis': ["從後現代主義的視角解構{scenario}，其原本穩固的意義指涉開始產生了流動與斷裂。", "{scenario}作為集體記憶的載體，在國族認同的建構過程中扮演著舉足輕重的角色。", "剖析{scenario}在不同歷史語境下的論述轉向，有助於我們釐清權力與知識的共謀關係。", "究其本源，{scenario}的存在本身即是對人類文明進程的一種永恆提問與反思。"] }
+        };
+
+        const NLP_VOCAB = {
+            "覺得": { adv: "認為", formal: "以為", casual: "覺得" }, "買": { adv: "購買", formal: "購置", casual: "買" }, "說": { adv: "表示", formal: "指出", casual: "講" }, "很多": { adv: "眾多", formal: "繁多", casual: "好多" }, "很大": { adv: "巨大", formal: "龐大", casual: "超大" }, "幫助": { adv: "協助", formal: "援助", casual: "幫忙" }, "但是": { adv: "然而", formal: "惟", casual: "不過" }, "因為": { adv: "由於", formal: "因", casual: "因為" }, "所以": { adv: "因此", formal: "故", casual: "所以" }, "好": { adv: "優良", formal: "甚佳", casual: "不錯" }, "貴": { adv: "昂貴", formal: "價格不斐", casual: "很貴" }, "看": { adv: "觀賞", formal: "視察", casual: "瞧瞧" }, "去": { adv: "前往", formal: "赴", casual: "去" }
+        };
+
+        function getRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+        // --- 3. Management Logic (Mode & Key) ---
+        function loadApiKey() {
+            const stored = localStorage.getItem('gemini_api_key');
+            if (stored) {
+                userApiKey = stored;
+                document.getElementById('api-key-input').value = stored;
+            }
+            updateStatusDot();
+        }
+
+        function toggleAppMode() {
+            if (appMode === 'trial') {
+                // Switch to API
+                if (!userApiKey && !SYSTEM_API_KEY) {
+                    openSettings();
+                    return;
+                }
+                appMode = 'api';
+            } else {
+                // Switch to Trial
+                appMode = 'trial';
+            }
+            updateModeUI();
+        }
+
+        function updateModeUI() {
+            const trialPill = document.getElementById('mode-trial-pill');
+            const apiPill = document.getElementById('mode-api-pill');
+            const heroBadge = document.getElementById('hero-badge');
+            
+            // Updates for badges in specific views
+            const genBadge = document.getElementById('gen-mode-badge');
+            const rwBadge = document.getElementById('rw-mode-badge');
+            const qaBadge = document.getElementById('qa-mode-badge');
+            const chatStatus = document.getElementById('chat-status');
+
+            if (appMode === 'api') {
+                trialPill.className = "px-3 py-1 rounded-full text-xs font-bold text-gray-400 transition-all";
+                apiPill.className = "px-3 py-1 rounded-full text-xs font-bold bg-white text-purple-600 shadow-sm transition-all";
+                
+                if(heroBadge) { heroBadge.textContent = "🧠 正式版模式 (AI Powered)"; heroBadge.className = "ml-auto text-xs font-bold text-purple-600 bg-purple-50 px-2 py-0.5 rounded"; }
+                
+                if(genBadge) { genBadge.textContent = "正式版"; genBadge.className = "text-[10px] px-2 py-0.5 rounded bg-purple-100 text-purple-700 font-bold"; }
+                if(rwBadge) { rwBadge.textContent = "🧠 正式版"; rwBadge.className = "text-xs font-bold text-purple-600 bg-purple-50 px-2 py-1 rounded"; }
+                if(qaBadge) { qaBadge.textContent = "🧠 正式版"; qaBadge.className = "text-[10px] font-bold text-purple-600 bg-purple-50 px-2 py-0.5 rounded border border-purple-200"; }
+                if(chatStatus) { chatStatus.innerHTML = '<span class="w-2 h-2 bg-purple-500 rounded-full"></span> 正式版 (Gemini 2.5)'; chatStatus.className = "text-xs text-purple-500 flex items-center gap-1"; }
+
+            } else {
+                trialPill.className = "px-3 py-1 rounded-full text-xs font-bold bg-white text-green-600 shadow-sm transition-all";
+                apiPill.className = "px-3 py-1 rounded-full text-xs font-bold text-gray-400 transition-all";
+                
+                if(heroBadge) { heroBadge.textContent = "⚡ 體驗版模式 (Simulated)"; heroBadge.className = "ml-auto text-xs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded"; }
+                
+                if(genBadge) { genBadge.textContent = "體驗版"; genBadge.className = "text-[10px] px-2 py-0.5 rounded bg-green-100 text-green-700 font-bold"; }
+                if(rwBadge) { rwBadge.textContent = "⚡ 體驗版"; rwBadge.className = "text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded"; }
+                if(qaBadge) { qaBadge.textContent = "⚡ 體驗版"; qaBadge.className = "text-[10px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded border border-green-200"; }
+                if(chatStatus) { chatStatus.innerHTML = '<span class="w-2 h-2 bg-green-500 rounded-full"></span> 體驗版 (Simulated)'; chatStatus.className = "text-xs text-green-500 flex items-center gap-1"; }
+            }
+        }
+
+        function openSettings() { document.getElementById('settings-modal').classList.remove('hidden'); }
+        function closeSettings() { document.getElementById('settings-modal').classList.add('hidden'); }
+
+        function saveApiKey() {
+            const input = document.getElementById('api-key-input').value.trim();
+            if (input) {
+                localStorage.setItem('gemini_api_key', input);
+                userApiKey = input;
+                alert("API Key 已儲存！正式版功能已啟用。");
+                appMode = 'api';
+                updateModeUI();
+                closeSettings();
+            } else {
+                localStorage.removeItem('gemini_api_key');
+                userApiKey = "";
+                alert("API Key 已移除，將切換回體驗版。");
+                appMode = 'trial';
+                updateModeUI();
+            }
+            updateStatusDot();
+        }
+
+        function toggleKeyVisibility() {
+            const input = document.getElementById('api-key-input');
+            const icon = document.getElementById('eye-icon');
+            if (input.type === "password") { input.type = "text"; icon.classList.remove('fa-eye'); icon.classList.add('fa-eye-slash'); }
+            else { input.type = "password"; icon.classList.remove('fa-eye-slash'); icon.classList.add('fa-eye'); }
+        }
+
+        function updateStatusDot() {
+            const dot = document.getElementById('api-status-dot');
+            if (!userApiKey && !SYSTEM_API_KEY) { dot.classList.remove('hidden'); } else { dot.classList.add('hidden'); }
+        }
+
+        async function callGeminiAPI(prompt) {
+            const keyToUse = userApiKey || SYSTEM_API_KEY;
+            if (!keyToUse) throw new Error("請先設定 API Key");
+            
+            try {
+                const response = await fetch(`${BASE_URL}?key=${keyToUse}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                });
+                if (!response.ok) throw new Error(`API Error: ${response.status}`);
+                const data = await response.json();
+                return data.candidates[0].content.parts[0].text;
+            } catch (error) {
+                // If error, ask to switch to trial
+                if(confirm(`連線錯誤 (${error.message})。是否暫時切換回體驗版？`)) {
+                    appMode = 'trial';
+                    updateModeUI();
+                    throw new Error("Switched to Trial"); // Stop current exec
+                }
+                throw error;
+            }
+        }
+
+        // --- 4. Feature Implementation (Dual Engine) ---
+
+        // A. Generate Text Handler
+        function handleGenerateAction() {
+            if (appMode === 'api') generateTextAPI();
+            else generateTextMock();
+        }
+
+        function generateTextMock() {
+            const level = document.getElementById('gen-level').value;
+            const type = document.getElementById('gen-type').value;
+            const outputArea = document.getElementById('output-area');
+            outputArea.innerHTML = `<div class="h-full flex flex-col items-center justify-center text-brand-orange"><i class="fa-solid fa-circle-notch fa-spin text-4xl mb-4"></i><p class="font-bold">生成中 (體驗版)...</p></div>`;
+
+            setTimeout(() => {
+                const topicName = TOPICS.find(t => t.id === state.currentTopic)?.name || state.currentTopic;
+                const levelTemplates = MOCK_TEMPLATES[level];
+                let rawSentences = (levelTemplates && levelTemplates[type]) ? levelTemplates[type] : [`關於${state.currentScenario}的句子。`];
+                
+                const results = rawSentences.map(template => {
+                    let zh = template.replace(/{scenario}/g, state.currentScenario).replace(/{topic}/g, topicName).replace(/{time}/g, getRandom(VOCAB_POOL.time)).replace(/{person}/g, getRandom(VOCAB_POOL.person)).replace(/{adj_pos}/g, getRandom(VOCAB_POOL.adj_pos)).replace(/{adj_neg}/g, getRandom(VOCAB_POOL.adj_neg)).replace(/{feeling}/g, getRandom(VOCAB_POOL.feeling));
+                    return { zh, pinyin: "Mónǐ pīnyīn...", en: "Simulated translation..." };
+                });
+                renderGenOutput(results, level, type);
+            }, 600);
+        }
+
+        async function generateTextAPI() {
+            const level = document.getElementById('gen-level').value;
+            const type = document.getElementById('gen-type').value;
+            const topicName = TOPICS.find(t => t.id === state.currentTopic)?.name;
+            const outputArea = document.getElementById('output-area');
+            outputArea.innerHTML = `<div class="h-full flex flex-col items-center justify-center text-purple-600"><i class="fa-solid fa-wand-magic-sparkles fa-spin text-4xl mb-4"></i><p class="font-bold">Gemini 正在創作中...</p></div>`;
+
+            const prompt = `Role: Expert Chinese Teacher. Generate 4 unique Mandarin sentences in Traditional Chinese (繁體中文). Topic: ${topicName}, Scenario: ${state.currentScenario}. Level: ${level}. Type: ${type}. Output strictly JSON array: [{"zh":"", "pinyin":"", "en":""}]. No markdown.`;
+            
+            try {
+                const text = await callGeminiAPI(prompt);
+                const results = JSON.parse(text.replace(/```json|```/g, '').trim());
+                renderGenOutput(results, level, type);
+            } catch (e) { if(e.message !== "Switched to Trial") outputArea.innerHTML = "Error: " + e.message; }
+        }
+
+        function renderGenOutput(results, level, type) {
+            const outputArea = document.getElementById('output-area');
+            const typeMap = { 'scenario': '情境敘述', 'experience': '經驗分享', 'suggestion': '實用建議', 'analysis': '深度分析' };
+            let html = `<div class="space-y-4 animate-fade-in">`;
+            results.forEach((item) => {
+                html += `<div class="bg-white p-5 rounded-lg border border-gray-200 shadow-sm relative group"><div class="absolute top-4 left-0 w-1 h-8 ${appMode === 'api' ? 'bg-purple-500' : 'bg-green-500'} rounded-r"></div><div class="pl-3"><div class="flex items-center gap-2 mb-2"><span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded font-medium">${typeMap[type]}</span><span class="px-2 py-0.5 ${appMode==='api'?'bg-purple-50 text-purple-600':'bg-green-50 text-green-600'} text-xs rounded font-medium">${level}</span></div><p class="text-xl text-slate-800 font-medium mb-2 leading-relaxed">${item.zh}</p><p class="text-sm text-slate-500 mb-1 font-mono">${item.pinyin}</p><p class="text-sm text-brand-blue opacity-80 italic">${item.en}</p></div></div>`;
+            });
+            html += `</div>`;
+            outputArea.innerHTML = html;
+        }
+
+        // B. Rewrite Handler
+        function handleRewriteAction() {
+            if (appMode === 'api') handleRewriteAPI();
+            else handleRewriteMock();
+        }
+
+        function handleRewriteMock() {
+            const input = document.getElementById('rewrite-input').value;
+            const level = document.getElementById('rewrite-level').value;
+            const style = document.getElementById('rewrite-style').value;
+            
+            if(!input.trim()) { alert("請先輸入文字"); return; }
+            
+            const output = document.getElementById('rewrite-output');
+            const analysis = document.getElementById('rewrite-analysis');
+            const reason = document.getElementById('rewrite-reason');
+            
+            output.innerHTML = `<div class="text-center py-8"><i class="fa-solid fa-spinner fa-spin text-green-600"></i> 體驗版改寫中...</div>`;
+            analysis.classList.add('hidden');
+
+            setTimeout(() => {
+                let rewrittenText = input;
+                let changes = [];
+                for (const [key, variants] of Object.entries(NLP_VOCAB)) {
+                    if (input.includes(key)) {
+                        let replacement = null;
+                        if (level === 'harder') replacement = variants.adv;
+                        else if (style === 'formal') replacement = variants.formal;
+                        else if (style === 'casual') replacement = variants.casual;
+                        if (replacement && replacement !== key) {
+                            rewrittenText = rewrittenText.replace(new RegExp(key, "g"), `<span class="highlight-change">${replacement}</span>`);
+                            changes.push(`${key}->${replacement}`);
+                        }
+                    }
+                }
+                if (changes.length === 0) rewrittenText += " (體驗版僅支援部分詞彙替換)";
+                
+                output.innerHTML = `<p>${rewrittenText}</p>`;
+                reason.textContent = changes.length ? `模擬替換了 ${changes.length} 個詞彙。` : "未偵測到內建詞彙。";
+                analysis.classList.remove('hidden');
+            }, 800);
+        }
+
+        async function handleRewriteAPI() {
+            const input = document.getElementById('rewrite-input').value;
+            if(!input.trim()) { alert("請先輸入文字"); return; }
+            const output = document.getElementById('rewrite-output');
+            const analysis = document.getElementById('rewrite-analysis');
+            output.innerHTML = `<div class="text-center py-8"><i class="fa-solid fa-wand-magic-sparkles fa-spin text-purple-600"></i> AI 深度改寫中...</div>`;
+            analysis.classList.add('hidden');
+
+            const level = document.getElementById('rewrite-level').value;
+            const style = document.getElementById('rewrite-style').value;
+            const prompt = `Rewrite the following Chinese text: "${input}" into Traditional Chinese (繁體中文). Target: Level ${level}, Style ${style}. Output JSON: {"rewritten": "...", "reasoning": "..."}. No markdown.`;
+
+            try {
+                const text = await callGeminiAPI(prompt);
+                const data = JSON.parse(text.replace(/```json|```/g, '').trim());
+                output.innerHTML = `<p>${data.rewritten}</p>`;
+                document.getElementById('rewrite-reason').textContent = data.reasoning;
+                analysis.classList.remove('hidden');
+            } catch (e) { if(e.message !== "Switched to Trial") output.innerHTML = "Error: " + e.message; }
+        }
+
+        // C. QA Handler
+        function handleQAAction(type) {
+            if (appMode === 'api') handleQAAPI(type);
+            else handleQAMock(type);
+        }
+
+        function handleQAMock(type) {
+            const input = document.getElementById('qa-input').value;
+            const output = document.getElementById('qa-output');
+            if(!input.trim()) { alert("請先輸入文章內容"); return; }
+            output.innerHTML = `<div class="text-center py-8 text-green-600">模擬出題中...</div>`;
+            setTimeout(() => {
+                const keywords = input.match(/[\u4e00-\u9fa5]{2,}/g) || ["關鍵詞"];
+                const keyword = keywords[0];
+                let html = `<div class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm animate-fade-in"><h4 class="font-bold text-green-700 mb-4">題目 (體驗版)</h4><p>請根據文章回答關於「${keyword}」的問題。</p></div>`;
+                output.innerHTML = html;
+            }, 800);
+        }
+
+        async function handleQAAPI(type) {
+            const input = document.getElementById('qa-input').value;
+            const output = document.getElementById('qa-output');
+            if(!input.trim()) { alert("請先輸入文章內容"); return; }
+            output.innerHTML = `<div class="text-center py-8 text-purple-600"><i class="fa-solid fa-spinner fa-spin"></i> AI 閱讀理解中...</div>`;
+            
+            const prompt = `Generate a ${type} for Chinese text: "${input}" in Traditional Chinese (繁體中文). JSON Output: {"question_html": "...", "answer_html": "..."}. No markdown.`;
+            try {
+                const text = await callGeminiAPI(prompt);
+                const data = JSON.parse(text.replace(/```json|```/g, '').trim());
+                output.innerHTML = `<div class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm animate-fade-in"><div class="text-slate-800 mb-4">${data.question_html}</div><div class="mt-4 bg-purple-50 p-3 rounded text-sm text-purple-800 hidden toggle-answer"><strong>解析：</strong><br>${data.answer_html}</div><button onclick="this.previousElementSibling.classList.toggle('hidden')" class="mt-2 text-sm text-purple-600 underline">顯示答案</button></div>`;
+            } catch (e) { if(e.message !== "Switched to Trial") output.innerHTML = "Error"; }
+        }
+
+        // D. Assistant Handler
+        function setChatInput(text) { document.getElementById('chat-input').value = text; }
+        
+        function handleChatAction() {
+            const msg = document.getElementById('chat-input').value;
+            if(!msg.trim()) return;
+            // UI Update
+            const chatContainer = document.getElementById('chat-messages');
+            const userDiv = document.createElement('div');
+            userDiv.className = 'chat-bubble chat-user';
+            userDiv.textContent = msg;
+            chatContainer.appendChild(userDiv);
+            document.getElementById('chat-input').value = '';
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            if (appMode === 'api') sendChatMessageAPI(msg);
+            else sendChatMessageMock(msg);
+        }
+
+        function sendChatMessageMock(msg) {
+            const chatContainer = document.getElementById('chat-messages');
+            setTimeout(() => {
+                const aiDiv = document.createElement('div');
+                aiDiv.className = 'chat-bubble chat-ai';
+                if(msg.includes("把")) aiDiv.innerHTML = "體驗版回覆：把字句結構為 S + 把 + O + V。";
+                else if(msg.includes("錯")) aiDiv.innerHTML = "體驗版回覆：這句話語序可能需要調整。";
+                else aiDiv.innerHTML = "這是體驗版助教，請切換至正式版以獲得完整 AI 解答。";
+                chatContainer.appendChild(aiDiv);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }, 600);
+        }
+
+        async function sendChatMessageAPI(msg) {
+            const chatContainer = document.getElementById('chat-messages');
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'chat-bubble chat-ai';
+            loadingDiv.innerHTML = '<i class="fa-solid fa-ellipsis fa-fade"></i>';
+            chatContainer.appendChild(loadingDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            try {
+                const text = await callGeminiAPI(`You are a Chinese tutor. Reply to: "${msg}" in Traditional Chinese (繁體中文).`);
+                loadingDiv.innerHTML = marked.parse(text);
+            } catch (e) { 
+                if(e.message === "Switched to Trial") loadingDiv.innerHTML = "已切換回體驗版。請重試。";
+                else loadingDiv.innerHTML = "連線錯誤。";
+            }
+        }
+
+        // E. Multimodal
+        function handleMultimodalAction(type) {
+            if (appMode === 'api') generateMultimodalAPI(type);
+            else generateMultimodalMock(type);
+        }
+
+        function generateMultimodalMock(type) {
+            // Mock Data for the 8 scenarios
+            const scenarios = {
+                'night_market': { 
+                    title: '夜市情境 (殺價)', icon: '🍜',
+                    visual: '圖片是一個熱鬧的台灣夜市。攤位上掛著「一件390元，兩件700元」的黃色牌子。老闆穿著圍裙正在招呼客人，攤位上擺滿了各式各樣的手機殼。背景是擁擠的人潮和紅色的燈籠。',
+                    script: '<div class="flex gap-2"><span class="font-bold text-blue-600">老闆：</span><span>帥哥，看看喔！這都是最新款的，很耐摔！【拿起一個手機殼展示】</span></div><div class="flex gap-2"><span class="font-bold text-green-600">你：</span><span>這個多少錢？【指著一個黑色殼】</span></div><div class="flex gap-2"><span class="font-bold text-blue-600">老闆：</span><span>那個喔，原價450，算你390就好！</span></div><div class="flex gap-2"><span class="font-bold text-green-600">你：</span><span>老闆，太貴了啦！300塊賣不賣？【露出猶豫的表情】</span></div>',
+                    task: '請看著老闆的眼睛（想像），用「太貴了」和「算便宜一點」來嘗試殺價。'
+                },
+                'mrt': { 
+                    title: '捷運站 (問路)', icon: '🚇',
+                    visual: '場景是台北捷運站的詢問處。一位穿著制服的站務員坐在玻璃窗後。牆上有捷運路線圖，指示牌寫著「往淡水」和「往象山」。你的悠遊卡顯示餘額不足。',
+                    script: '<div class="flex gap-2"><span class="font-bold text-green-600">你：</span><span>不好意思，請問我要去台北101，要搭哪一條線？【拿出手機地圖】</span></div><div class="flex gap-2"><span class="font-bold text-blue-600">站務員：</span><span>你要搭紅線（信義線），往象山方向。在台北101/世貿站下車。</span></div><div class="flex gap-2"><span class="font-bold text-green-600">你：</span><span>那我的卡片好像沒錢了，這裡可以加值嗎？</span></div>',
+                    task: '請詢問站務員如何前往「士林夜市」，並詢問末班車的時間。'
+                },
+                'hospital': { 
+                    title: '醫院櫃檯 (掛號)', icon: '🏥',
+                    visual: '這是醫院的掛號大廳。牆上有電子號碼牌顯示「0153」。櫃檯人員穿著粉紅色制服，戴著口罩。旁邊有「初診填表處」的標示。',
+                    script: '<div class="flex gap-2"><span class="font-bold text-blue-600">櫃檯：</span><span>你好，請問今天要看哪一科？</span></div><div class="flex gap-2"><span class="font-bold text-green-600">你：</span><span>我覺得頭很痛，還有點發燒。【摸著額頭】</span></div><div class="flex gap-2"><span class="font-bold text-blue-600">櫃檯：</span><span>那幫你掛家醫科。請問有帶健保卡嗎？</span></div>',
+                    task: '請描述你的症狀（例如：肚子痛、拉肚子），並詢問醫生今天有沒有診。'
+                },
+                'office': { 
+                    title: '辦公室會議 (提案)', icon: '💼',
+                    visual: '會議室裡，大家都圍著長桌坐著。投影幕上顯示著簡報圖表。主管雙手抱胸，表情嚴肅地看著你。你的同事正在做筆記。',
+                    script: '<div class="flex gap-2"><span class="font-bold text-green-600">你：</span><span>各位好，這是我們團隊針對下一季的行銷提案。【指著投影幕】</span></div><div class="flex gap-2"><span class="font-bold text-blue-600">主管：</span><span>預算的部分，你們有考慮過嗎？</span></div><div class="flex gap-2"><span class="font-bold text-green-600">你：</span><span>有的，請看下一頁，我們預計可以節省10%的成本。</span></div>',
+                    task: '請用正式的語氣，向主管說明為什麼你的提案比別人的更好。'
+                },
+                'immigration': { 
+                    title: '移民署 (辦理居留證)', icon: '🛂',
+                    visual: '移民署的辦事大廳，人很多。你需要抽號碼牌。櫃檯玻璃上貼著「請出示護照」的貼紙。辦事員正在檢查文件。',
+                    script: '<div class="flex gap-2"><span class="font-bold text-blue-600">辦事員：</span><span>先生你好，今天要辦理什麼業務？</span></div><div class="flex gap-2"><span class="font-bold text-green-600">你：</span><span>我要申請延長居留證。【遞出申請表和護照】</span></div><div class="flex gap-2"><span class="font-bold text-blue-600">辦事員：</span><span>好的，請給我看你的在學證明或工作證明。照片有帶嗎？</span></div>',
+                    task: '請詢問辦事員「居留證過期了怎麼辦？」以及「大概多久可以拿到新卡？」'
+                },
+                'bank': { 
+                    title: '銀行櫃檯 (開戶)', icon: '🏦',
+                    visual: '銀行內部，冷氣很強。保全站在門口。櫃檯小姐穿著整齊的制服。桌上有「開戶請由此進」的牌子，還有驗鈔機。',
+                    script: '<div class="flex gap-2"><span class="font-bold text-blue-600">行員：</span><span>您好，請問需要什麼服務？</span></div><div class="flex gap-2"><span class="font-bold text-green-600">你：</span><span>我想開一個薪資轉帳戶頭。</span></div><div class="flex gap-2"><span class="font-bold text-blue-600">行員：</span><span>沒問題，請借我您的雙證件（身分證和健保卡）還有印章。</span></div>',
+                    task: '請詢問行員「國外匯款的手續費是多少？」以及「如何申請網路銀行？」'
+                },
+                'convenience_store': { 
+                    title: '便利商店 (問包裹)', icon: '📦',
+                    visual: '便利商店櫃檯，後面是滿滿的香菸和酒架。店員正在幫前一位客人結帳。旁邊的咖啡機正在運作。地上堆了一些剛送來的包裹。',
+                    script: '<div class="flex gap-2"><span class="font-bold text-blue-600">店員：</span><span>歡迎光臨！需要什麼嗎？</span></div><div class="flex gap-2"><span class="font-bold text-green-600">你：</span><span>我要領包裹，手機末三碼是 123。</span></div><div class="flex gap-2"><span class="font-bold text-blue-600">店員：</span><span>好的，請問名字是？證件借我看一下喔。</span></div>',
+                    task: '請詢問店員「這個包裹可以貨到付款嗎？」以及「現在有沒有咖啡買一送一？」'
+                },
+                'campus': { 
+                    title: '校園行政處 (詢問學費)', icon: '🏫',
+                    visual: '學校的行政辦公室，有很多文件櫃。助教正在用電腦。佈告欄上貼著「學費繳交期限」的通知單。',
+                    script: '<div class="flex gap-2"><span class="font-bold text-green-600">你：</span><span>不好意思，請問這學期的學費單要去哪裡印？</span></div><div class="flex gap-2"><span class="font-bold text-blue-600">助教：</span><span>你可以上學生資訊系統下載，或者去那邊的機器列印。</span></div><div class="flex gap-2"><span class="font-bold text-green-600">你：</span><span>那最晚什麼時候要繳費？</span></div>',
+                    task: '請詢問助教「如果遲交學費會怎麼樣？」以及「可以用信用卡繳費嗎？」'
+                }
+            };
+
+            const data = scenarios[type];
+            document.getElementById('mm-scenario-display').textContent = data.title + " (體驗版)";
+            document.getElementById('mm-visual-icon').textContent = data.icon;
+            document.getElementById('mm-output').classList.remove('hidden');
+            
+            document.getElementById('mm-visual-clues').textContent = data.visual;
+            document.getElementById('mm-script').innerHTML = data.script;
+            document.getElementById('mm-task').textContent = data.task;
+        }
+
+        async function generateMultimodalAPI(type) {
+            document.getElementById('mm-output').classList.add('hidden');
+            document.getElementById('mm-loading').classList.remove('hidden');
+            
+            // Map types to display names
+            const titles = { 
+                'night_market': '夜市情境 (殺價)', 
+                'mrt': '捷運站 (問路)', 
+                'hospital': '醫院櫃檯 (掛號)', 
+                'office': '辦公室會議 (提案)',
+                'immigration': '移民署 (辦理居留證)',
+                'bank': '銀行櫃檯 (開戶)',
+                'convenience_store': '便利商店 (問包裹)',
+                'campus': '校園行政處 (詢問學費)'
+            };
+            const icons = { 
+                'night_market': '🍜', 'mrt': '🚇', 'hospital': '🏥', 'office': '💼',
+                'immigration': '🛂', 'bank': '🏦', 'convenience_store': '📦', 'campus': '🏫'
+            };
+
+            const title = titles[type];
+            document.getElementById('mm-scenario-display').textContent = title;
+            document.getElementById('mm-visual-icon').textContent = icons[type];
+
+            const prompt = `
+                Generate a multimodal Chinese learning content for the scenario: "${title}".
+                Output a JSON object with strictly these keys:
+                - "visual_description": Describe the visual scene in Traditional Chinese. Include details like signs, people's expressions, and objects.
+                - "script": A dialogue script between 'User' and another person. Format it as HTML string with color coding (e.g., <div class="flex gap-2"><span class="font-bold text-blue-600">Person B:</span><span>...</span></div>). Include [Action Instructions] in brackets within the dialogue.
+                - "task": A specific interactive task for the learner involving observation and speaking.
+                Do not use markdown blocks.
+            `;
+
+            try {
+                const text = await callGeminiAPI(prompt);
+                const data = JSON.parse(text.replace(/```json|```/g, '').trim());
+                
+                document.getElementById('mm-visual-clues').textContent = data.visual_description;
+                document.getElementById('mm-script').innerHTML = data.script;
+                document.getElementById('mm-task').textContent = data.task;
+
+                document.getElementById('mm-loading').classList.add('hidden');
+                document.getElementById('mm-output').classList.remove('hidden');
+            } catch (e) { 
+                if(e.message !== "Switched to Trial") document.getElementById('mm-loading').innerHTML = `<p class="text-red-500">Error: ${e.message}</p>`; 
+            }
+        }
+
+        // --- Navigation Functions (Restored) ---
+        function navigateTo(viewId) {
+            document.querySelectorAll('[id^="view-"]').forEach(el => el.classList.add('hidden'));
+            const targetView = document.getElementById(`view-${viewId}`);
+            if (targetView) targetView.classList.remove('hidden');
+            window.scrollTo(0, 0);
+            if (viewId === 'generator' && !state.currentTopic) selectTopic(TOPICS[0].id);
+            updateModeUI();
+        }
+
+        function setMode(mode) {
+            const btnText = document.getElementById('current-mode-text');
+            const modes = { 'teacher': '教師模式', 'learner': '學習者模式', 'researcher': '研究者模式' };
+            btnText.textContent = modes[mode];
+        }
+
+        function initGenerator() {
+            const topicList = document.getElementById('gen-topic-list');
+            const homeGrid = document.getElementById('topic-grid');
+            
+            // Clear existing content to prevent duplicates if init is called multiple times
+            if (topicList) topicList.innerHTML = '';
+            if (homeGrid) homeGrid.innerHTML = '';
+
+            TOPICS.forEach(topic => {
+                // Sidebar items
+                const btn = document.createElement('button');
+                btn.className = `text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center gap-2 bg-white text-slate-600 hover:bg-orange-50 hover:text-brand-orange border border-transparent hover:border-orange-200`;
+                btn.innerHTML = `<i class="fa-solid ${topic.icon}"></i> ${topic.name}`;
+                btn.onclick = () => selectTopic(topic.id);
+                btn.id = `topic-btn-${topic.id}`;
+                if (topicList) topicList.appendChild(btn);
+
+                // Home Grid items
+                const gridItem = document.createElement('div');
+                gridItem.className = "bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col items-center text-center group border border-gray-100";
+                gridItem.onclick = () => { navigateTo('generator'); selectTopic(topic.id); };
+                gridItem.innerHTML = `
+                    <span class="text-3xl mb-3 text-brand-orange transform group-hover:scale-110 transition-transform"><i class="fa-solid ${topic.icon}"></i></span>
+                    <span class="font-medium text-slate-700 group-hover:text-brand-orange">${topic.name}</span>
+                `;
+                if (homeGrid) homeGrid.appendChild(gridItem);
+            });
+        }
+
+        function selectTopic(topicId) {
+            state.currentTopic = topicId;
+            const topicData = TOPICS.find(t => t.id === topicId);
+            
+            // Update Sidebar UI
+            document.querySelectorAll('[id^="topic-btn-"]').forEach(b => {
+                b.classList.remove('bg-brand-orange', 'text-white', 'hover:bg-orange-600');
+                b.classList.add('bg-white', 'text-slate-600', 'hover:bg-orange-50');
+            });
+            const activeBtn = document.getElementById(`topic-btn-${topicId}`);
+            if (activeBtn) {
+                activeBtn.classList.remove('bg-white', 'text-slate-600', 'hover:bg-orange-50');
+                activeBtn.classList.add('bg-brand-orange', 'text-white', 'hover:bg-orange-600');
+            }
+
+            // Populate Scenarios
+            const scenarioList = document.getElementById('gen-scenario-list');
+            if (scenarioList) {
+                scenarioList.innerHTML = '';
+                topicData.scenarios.forEach((scen, idx) => {
+                    const sBtn = document.createElement('button');
+                    sBtn.className = `px-3 py-1.5 rounded-full text-xs border transition-colors ${idx===0 ? 'border-brand-orange bg-orange-50 text-brand-orange font-bold' : 'border-gray-200 text-gray-600 hover:border-brand-orange'}`;
+                    sBtn.textContent = scen;
+                    sBtn.onclick = (e) => {
+                        Array.from(scenarioList.children).forEach(c => c.className = 'px-3 py-1.5 rounded-full text-xs border border-gray-200 text-gray-600 hover:border-brand-orange transition-colors');
+                        e.target.className = 'px-3 py-1.5 rounded-full text-xs border border-brand-orange bg-orange-50 text-brand-orange font-bold transition-colors';
+                        selectScenario(scen);
+                    };
+                    scenarioList.appendChild(sBtn);
+                });
+                // Default select first scenario
+                selectScenario(topicData.scenarios[0]);
+            }
+        }
+
+        function selectScenario(scen) {
+            state.currentScenario = scen;
+            const topic = TOPICS.find(t => t.id === state.currentTopic);
+            const topicName = topic ? topic.name : '';
+            const statusEl = document.getElementById('status-selection');
+            if (statusEl) statusEl.textContent = `${topicName} - ${scen}`;
+        }
+
+        // --- Start ---
+        window.onload = () => { 
+            initGenerator();
+            loadApiKey();
+            updateModeUI();
+        };
+
+    </script>
+</body>
+</html>
