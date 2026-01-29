@@ -1,70 +1,93 @@
 // api/generate.js
-// POST /api/generate
-// body: { prompt: string, model?: string, temperature?: number }
+export default async function handler(req, res) {
+  const startTime = Date.now();
 
-module.exports = async (req, res) => {
+  // CORS 設定
+  res.setHeader('Access-Control-Allow-Credentials', true);
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') { res.status(200).end(); return; }
+
   try {
-    if (req.method !== "POST") {
-      res.status(405).send("Method Not Allowed");
-      return;
+    const { prompt, model } = req.body;
+    
+    if (!prompt) throw new Error('Prompt is required');
+
+    let outputText = "";
+    
+    // === 分流邏輯：根據模型名稱決定呼叫哪家 API ===
+
+    // 1. Google Gemini 系列
+    if (model.includes('gemini')) {
+        const apiKey = process.env.GEMINI_API_KEY;
+        const response = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+            {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+            }
+        );
+        const data = await response.json();
+        if (data.error) throw new Error(data.error.message);
+        outputText = data.candidates[0].content.parts[0].text;
+    } 
+    
+    // 2. OpenAI (GPT) 系列
+    else if (model.includes('gpt')) {
+        const apiKey = process.env.OPENAI_API_KEY;
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({
+                model: model,
+                messages: [{ role: "user", content: prompt }],
+                temperature: 0.7
+            })
+        });
+        const data = await response.json();
+        if (data.error) throw new Error(data.error.message);
+        outputText = data.choices[0].message.content;
     }
 
-    const { prompt, model, temperature } = req.body || {};
-    if (!prompt || typeof prompt !== "string") {
-      res.status(400).send("Missing or invalid 'prompt'");
-      return;
+    // 3. Groq (Llama 3) 系列
+    else if (model.includes('llama') || model.includes('mixtral') || model.includes('gemma')) {
+        const apiKey = process.env.GROQ_API_KEY;
+        // Groq 的用法跟 OpenAI 幾乎一樣，只是網址不同
+        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({
+                model: model,
+                messages: [{ role: "user", content: prompt }]
+            })
+        });
+        const data = await response.json();
+        if (data.error) throw new Error(data.error.message);
+        outputText = data.choices[0].message.content;
+    } 
+    
+    else {
+        throw new Error("未知的模型名稱");
     }
 
-    const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-    if (!GEMINI_API_KEY) {
-      res.status(500).send("Missing GEMINI_API_KEY in environment variables.");
-      return;
-    }
-
-    const usedModel = model || process.env.DEFAULT_MODEL || "gemini-2.0-flash";
-
-    const url =
-      `https://generativelanguage.googleapis.com/v1beta/models/` +
-      `${encodeURIComponent(usedModel)}:generateContent?key=${encodeURIComponent(
-        GEMINI_API_KEY
-      )}`;
-
-    const t0 = Date.now();
-
-    const payload = {
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: {
-        temperature: typeof temperature === "number" ? temperature : 0.2,
-      },
-    };
-
-    const resp = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+    // 計算耗時並回傳
+    const endTime = Date.now();
+    return res.status(200).json({ 
+        output: outputText, 
+        latency: endTime - startTime 
     });
 
-    const latencyMs = Date.now() - t0;
-
-    if (!resp.ok) {
-      const errText = await resp.text();
-      res.status(resp.status).send(errText);
-      return;
-    }
-
-    const data = await resp.json();
-    const outputText =
-      data?.candidates?.[0]?.content?.parts?.map((p) => p.text).join("") || "";
-
-    res.status(200).json({
-      ok: true,
-      model: usedModel,
-      latencyMs,
-      outputText,
-      raw: data,
-    });
-  } catch (e) {
-    res.status(500).send(String(e?.message || e));
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: error.message || '生成失敗' });
   }
-};
-
+}
