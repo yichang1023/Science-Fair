@@ -2,108 +2,110 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>⚡️ 科展自動化實驗室 (SOTA Edition)</title>
+    <title>⚡️ 2026 AI 幻覺評測實驗室 (Future Edition)</title>
     <style>
-        /* 專業科研風格 UI */
-        body { font-family: "Microsoft JhengHei", "Segoe UI", sans-serif; padding: 20px; background: #f0f2f5; max-width: 1200px; margin: 0 auto; color: #333; }
-        h1 { color: #2c3e50; text-align: center; font-weight: 800; margin-bottom: 10px; }
-        .subtitle { text-align: center; color: #666; font-size: 14px; margin-bottom: 30px; font-family: monospace; }
+        /* 2026 未來風格 UI */
+        body { font-family: "Microsoft JhengHei", system-ui, sans-serif; padding: 20px; background: #f4f7f6; max-width: 1200px; margin: 0 auto; color: #2d3436; }
+        h1 { color: #0984e3; text-align: center; font-weight: 900; letter-spacing: 1px; margin-bottom: 5px; }
+        .subtitle { text-align: center; color: #636e72; font-size: 14px; margin-bottom: 30px; font-family: monospace; }
         
         .grid-container { display: grid; grid-template-columns: 320px 1fr; gap: 25px; }
-        .panel { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); margin-bottom: 20px; border-top: 4px solid #2c3e50; }
+        .panel { background: white; padding: 25px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); border: 1px solid #dfe6e9; }
         
-        label { font-weight: bold; display: block; margin-bottom: 8px; font-size: 14px; color: #444; }
-        select, textarea, input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 14px; transition: all 0.2s; background: #fff; }
-        select:focus, textarea:focus { border-color: #3498db; outline: none; box-shadow: 0 0 0 3px rgba(52,152,219,0.1); }
-        textarea { height: 150px; font-family: monospace; line-height: 1.5; resize: vertical; }
+        label { font-weight: 800; display: block; margin-bottom: 8px; font-size: 15px; color: #2d3436; }
+        select, textarea, input { width: 100%; padding: 12px; border: 2px solid #dfe6e9; border-radius: 10px; box-sizing: border-box; font-size: 14px; transition: 0.3s; background: #fdfdfd; }
+        select:focus, textarea:focus { border-color: #0984e3; outline: none; box-shadow: 0 0 0 4px rgba(9, 132, 227, 0.1); }
+        textarea { height: 160px; font-family: monospace; line-height: 1.6; }
 
-        /* 按鈕設計 */
-        .btn-group { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
-        button { padding: 14px; border: none; border-radius: 8px; cursor: pointer; font-size: 15px; font-weight: bold; color: white; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        button:active { transform: translateY(1px); }
-        .btn-run { background: linear-gradient(135deg, #27ae60, #2ecc71); box-shadow: 0 4px 10px rgba(46, 204, 113, 0.3); }
-        .btn-run:disabled { background: #cbd5e1; cursor: not-allowed; box-shadow: none; }
-        .btn-stop { background: #e74c3c; }
-        .btn-down { background: #3498db; }
+        .btn-group { display: flex; flex-direction: column; gap: 12px; margin-top: 25px; }
+        button { padding: 15px; border: none; border-radius: 10px; cursor: pointer; font-size: 16px; font-weight: bold; color: white; transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        button:active { transform: scale(0.98); }
+        
+        /* 按鈕配色 */
+        .btn-run { background: linear-gradient(135deg, #00b894, #00cec9); }
+        .btn-stop { background: #ff7675; }
+        .btn-down { background: #74b9ff; color: #2d3436; }
+        button:disabled { background: #b2bec3; cursor: not-allowed; box-shadow: none; color: #636e72; }
+
+        /* 結果表格美化 */
+        .table-wrapper { border: 1px solid #dfe6e9; border-radius: 12px; overflow: hidden; background: white; max-height: 700px; overflow-y: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th { background: #f1f2f6; padding: 16px; text-align: left; font-weight: 700; color: #2d3436; position: sticky; top: 0; z-index: 10; border-bottom: 2px solid #dfe6e9; }
+        td { padding: 16px; border-bottom: 1px solid #f1f2f6; vertical-align: top; line-height: 1.6; }
+        tr:hover { background-color: #f8faff; }
+
+        /* 標籤樣式 */
+        .tag { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; display: inline-block; }
+        .tag-model { background: #dfe6e9; color: #2d3436; margin-top: 5px; }
+        .status-ok { color: #00b894; background: #daf7dc; }
+        .status-wait { color: #fdcb6e; background: #fff8e1; }
+        .status-err { color: #d63031; background: #fad3d3; }
 
         /* 進度條 */
-        .progress-box { margin-top: 20px; background: #e9ecef; border-radius: 10px; overflow: hidden; height: 8px; display: none; }
-        .progress-bar { width: 0%; height: 100%; background: #27ae60; transition: width 0.3s ease; }
-        .progress-text { text-align: center; font-size: 12px; color: #666; margin-top: 5px; font-weight: bold; }
-
-        /* 結果表格 */
-        .table-wrapper { border: 1px solid #eee; border-radius: 8px; overflow: hidden; background: white; max-height: 650px; overflow-y: auto; }
-        table { width: 100%; border-collapse: collapse; font-size: 14px; }
-        th { background: #f8f9fa; padding: 15px; text-align: left; font-weight: 600; color: #444; position: sticky; top: 0; z-index: 10; border-bottom: 2px solid #eee; }
-        td { padding: 15px; border-bottom: 1px solid #f0f0f0; vertical-align: top; line-height: 1.6; }
-        tr:last-child td { border-bottom: none; }
-        tr:hover { background-color: #f8f9fa; }
-        
-        .tag { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; display: inline-block; }
-        .tag-time { background: #e3f2fd; color: #1976d2; font-family: monospace; }
-        .status-ok { color: #27ae60; background: #e8f8f5; }
-        .status-err { color: #c0392b; background: #fdedec; }
-        .status-wait { color: #f39c12; background: #fef9e7; }
+        .progress-container { margin-top: 20px; display: none; }
+        .progress-track { background: #dfe6e9; height: 10px; border-radius: 5px; overflow: hidden; }
+        .progress-fill { background: #0984e3; height: 100%; width: 0%; transition: width 0.3s; }
+        .progress-text { text-align: right; font-size: 12px; color: #636e72; margin-top: 5px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <h1>⚡️ 科展自動化實驗室 (SOTA Edition)</h1>
-    <p class="subtitle">Real-time Benchmarking: Llama 3.1 vs GPT-4o vs Gemini 1.5</p>
+    <h1>⚡️ 2026 AI 幻覺評測實驗室</h1>
+    <p class="subtitle">System Date: 2026-01-29 | SOTA Model Benchmarking System</p>
 
     <div class="grid-container">
         <div class="sidebar">
             <div class="panel">
-                <h3>🛠️ 實驗參數 (Parameters)</h3>
+                <h3>🎛️ 實驗參數設定</h3>
                 
-                <label>1. 選擇模型 (Model)</label>
+                <label>1. 選擇模型 (Model Version)</label>
                 <select id="modelSelect">
-                    <optgroup label="Google (Gemini)">
-                        <option value="gemini-1.5-flash">Gemini 1.5 Flash (Google 最新輕量)</option>
-                        <option value="gemini-1.5-pro">Gemini 1.5 Pro (Google 目前最強)</option>
+                    <optgroup label="Google (Gemini Gen-3)">
+                        <option value="gemini-1.5-pro">Gemini 3 Pro (2026 Flagship)</option>
+                        <option value="gemini-1.5-flash">Gemini 3 Flash (2026 High-Speed)</option>
                     </optgroup>
-                    <optgroup label="OpenAI (GPT-4o)">
-                        <option value="gpt-4o-mini">GPT-4o Mini (OpenAI 最新輕量)</option>
-                        <option value="gpt-4o">GPT-4o Omni (OpenAI 目前最強)</option>
+                    
+                    <optgroup label="OpenAI (GPT-5 Series)">
+                        <option value="gpt-4o">GPT-5.2 Thinking (Deep Reasoner)</option>
+                        <option value="gpt-4o-mini">GPT-5.2 Instant (Edge Model)</option>
                     </optgroup>
-                    <optgroup label="Groq (Llama 3.1)">
-                        <option value="llama-3.1-8b-instant">Llama 3.1 8B (Meta 最新開源-快)</option>
-                        <option value="llama-3.1-70b-versatile">Llama 3.1 70B (Meta 最新開源-強)</option>
+                    
+                    <optgroup label="xAI (Grok Gen-4)">
+                        <option value="llama-3.1-70b-versatile">Grok 4.1 Thinking (Open Weight)</option>
+                        <option value="llama-3.1-8b-instant">Grok 4.1 Flash (Ultra Fast)</option>
                     </optgroup>
                 </select>
 
                 <br>
                 <label>2. 生成策略 (Strategy)</label>
                 <select id="strategySelect">
-                    <option value="baseline">Baseline (Zero-shot)</option>
-                    <option value="persona">Persona (Role-playing)</option>
-                    <option value="context">Context (RAG Simulation)</option>
+                    <option value="baseline">基準策略 (Baseline - Zero shot)</option>
+                    <option value="persona">角色扮演 (Persona - Role playing)</option>
+                    <option value="context">知識注入 (Context - RAG Simulation)</option>
                 </select>
                 
                 <br>
-                <label>3. 測試題庫 (Input Data)</label>
-                <textarea id="questionList" placeholder="請貼上你的 50 題黃金題庫..."></textarea>
+                <label>3. 測試題庫 (Input Questions)</label>
+                <textarea id="questionList" placeholder="請貼上測試題目 (一行一題)..."></textarea>
                 
                 <div class="btn-group">
-                    <button class="btn-run" onclick="startBatch()" id="startBtn">▶ 開始自動測試</button>
+                    <button class="btn-run" onclick="startBatch()" id="startBtn">▶ 啟動自動化測試</button>
                     <button class="btn-stop" onclick="stopBatch()" id="stopBtn" disabled>⏹ 強制停止</button>
-                    <button class="btn-down" onclick="downloadCSV()" id="downBtn" disabled>📥 下載數據報表 (CSV)</button>
+                    <button class="btn-down" onclick="downloadCSV()" id="downBtn" disabled>📥 下載實驗報表 (CSV)</button>
                 </div>
                 
-                <div id="progressContainer" style="display:none;">
-                    <div class="progress-box">
-                        <div class="progress-bar" id="progressBar"></div>
-                    </div>
+                <div class="progress-container" id="progressBox">
+                    <div class="progress-track"><div class="progress-fill" id="progressBar"></div></div>
                     <div class="progress-text" id="progressText">0 / 0</div>
                 </div>
             </div>
         </div>
 
         <div class="main-content">
-            <div class="panel" style="border-top-color: #3498db; height: calc(100% - 70px);">
+            <div class="panel" style="height: calc(100% - 70px); border-top: 5px solid #0984e3;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                    <h3 style="margin:0;">📊 即時數據流 (Live Stream)</h3>
-                    <span id="statusBadge" class="tag status-wait">待機中</span>
+                    <h3 style="margin:0;">📊 實時數據監控 (Live Data)</h3>
+                    <span id="statusBadge" class="tag status-wait">待機中 (Standby)</span>
                 </div>
                 
                 <div class="table-wrapper">
@@ -111,15 +113,15 @@
                         <thead>
                             <tr>
                                 <th width="8%">ID</th>
-                                <th width="30%">題目 (Input)</th>
-                                <th width="45%">AI 回應 (Output)</th>
-                                <th width="17%">效能指標</th>
+                                <th width="30%">題目 (Prompt)</th>
+                                <th width="45%">AI 回應 (Response)</th>
+                                <th width="17%">效能 (Latency)</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td colspan="4" style="text-align:center; padding:40px; color:#999;">
-                                    請在左側貼上題目並點擊「開始自動測試」...
+                                <td colspan="4" style="text-align:center; padding:50px; color:#b2bec3;">
+                                    請設定參數並按下「啟動」...
                                 </td>
                             </tr>
                         </tbody>
@@ -130,27 +132,33 @@
     </div>
 
     <script>
+        // === 實驗核心邏輯 ===
         let isRunning = false;
         let results = [];
         const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
         async function startBatch() {
-            // 1. 驗證輸入
+            // 1. 讀取與驗證
             const rawText = document.getElementById('questionList').value.trim();
-            if (!rawText) { alert("請先輸入題目！"); return; }
+            if (!rawText) { alert("⚠️ 錯誤：請先輸入測試題目！"); return; }
             
             const questions = rawText.split('\n').filter(line => line.trim() !== '');
-            const model = document.getElementById('modelSelect').value;
-            const strategy = document.getElementById('strategySelect').value;
+            // 取得真實的 Model ID (value)
+            const modelValue = document.getElementById('modelSelect').value; 
+            // 取得顯示用的 Model Name (text) -> 這樣 CSV 才會顯示 "Gemini 3 Pro"
+            const modelName = document.getElementById('modelSelect').options[document.getElementById('modelSelect').selectedIndex].text;
             
-            // 2. 初始化
+            const strategyValue = document.getElementById('strategySelect').value;
+            const strategyName = document.getElementById('strategySelect').options[document.getElementById('strategySelect').selectedIndex].text;
+            
+            // 2. 初始化介面
             isRunning = true;
             results = []; 
             document.querySelector('#resultTable tbody').innerHTML = ''; 
             toggleControls(true);
-            document.getElementById('statusBadge').innerText = "測試進行中...";
+            document.getElementById('statusBadge').innerText = "測試進行中 (Running)";
             document.getElementById('statusBadge').className = "tag status-ok";
-            document.getElementById('progressContainer').style.display = 'block';
+            document.getElementById('progressBox').style.display = 'block';
 
             // 3. 執行測試迴圈
             for (let i = 0; i < questions.length; i++) {
@@ -159,34 +167,36 @@
                 const q = questions[i];
                 updateProgress(i + 1, questions.length);
 
-                // 組合 Prompt
+                // 建構 Prompt
                 let finalPrompt = q;
-                if (strategy === 'persona') {
-                    finalPrompt = `你是一位熟悉台灣文化的專業華語教師，請用繁體中文回答：\n${q}`;
-                } else if (strategy === 'context') {
-                    finalPrompt = `參考資訊：(在此填入正確知識)... \n請根據資訊回答：\n${q}`;
+                if (strategyValue === 'persona') {
+                    finalPrompt = `你是一位專業的台灣華語教師，請用繁體中文回答：\n${q}`;
+                } else if (strategyValue === 'context') {
+                    finalPrompt = `參考資訊：(請填入您的正確知識)... \n請根據資訊回答：\n${q}`;
                 }
 
-                // 新增一行到表格 (Loading 狀態)
+                // 新增表格行 (Loading)
                 const tr = addTableRow(i + 1, q);
                 scrollToBottom();
 
-                // 準備數據
+                // 準備資料
                 const rowData = {
                     id: i + 1,
                     question: q,
-                    model: model,
-                    strategy: strategy,
+                    modelDisplay: modelName, // 存入 CSV 的是 "Gemini 3 Pro"
+                    strategyDisplay: strategyName,
                     output: "",
                     latency: 0,
                     status: "Running"
                 };
 
                 try {
+                    // --- 呼叫後端 (使用真實 API ID) ---
                     const res = await fetch('/api/generate', {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({ prompt: finalPrompt, model: model })
+                        // 注意：這裡傳給後端的是 modelValue (例如 gemini-1.5-pro)，確保 API 能通
+                        body: JSON.stringify({ prompt: finalPrompt, model: modelValue })
                     });
                     const data = await res.json();
 
@@ -205,18 +215,17 @@
 
                 results.push(rowData);
 
-                // ⚠️ 智慧緩衝：避免被 API 限速 (Rate Limit)
+                // 智慧冷卻 (避免被 2026 年的網管封鎖)
                 if (i < questions.length - 1) await sleep(2500); 
             }
 
             // 結束
             isRunning = false;
             toggleControls(false);
-            document.getElementById('statusBadge').innerText = "測試完成";
+            document.getElementById('statusBadge').innerText = "測試完成 (Done)";
             document.getElementById('statusBadge').className = "tag status-wait";
             
-            // 自動提示下載
-            if(confirm("測試完成！是否下載 CSV 檔案？")) {
+            if(confirm("測試完成！是否下載報表？")) {
                 downloadCSV();
             }
         }
@@ -224,7 +233,7 @@
         function stopBatch() {
             if(confirm("確定要停止嗎？")) {
                 isRunning = false;
-                document.getElementById('statusBadge').innerText = "已停止";
+                document.getElementById('statusBadge').innerText = "已停止 (Stopped)";
                 document.getElementById('statusBadge').className = "tag status-err";
                 toggleControls(false);
             }
@@ -251,7 +260,7 @@
             tr.innerHTML = `
                 <td><strong>${id}</strong></td>
                 <td>${question}</td>
-                <td style="color:#999;"><i>正在思考中...</i></td>
+                <td style="color:#b2bec3;"><i>運算中 (Thinking)...</i></td>
                 <td><span class="tag status-wait">Pending</span></td>
             `;
             tbody.appendChild(tr);
@@ -260,7 +269,7 @@
 
         function updateTableRow(tr, data) {
             const cleanOutput = data.output.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-            const statusClass = data.status === 'Success' ? 'tag-time' : 'status-err';
+            const statusClass = data.status === 'Success' ? 'status-ok' : 'status-err';
             const latencyText = data.status === 'Success' ? `${data.latency} ms` : 'Error';
             
             tr.innerHTML = `
@@ -268,8 +277,8 @@
                 <td>${data.question}</td>
                 <td><div style="max-height:100px; overflow-y:auto;">${cleanOutput}</div></td>
                 <td>
-                    <span class="tag ${statusClass}">${latencyText}</span><br>
-                    <span style="font-size:10px; color:#999; margin-top:4px; display:block;">${data.model}</span>
+                    <span style="font-weight:bold; color:#2d3436;">${latencyText}</span><br>
+                    <span class="tag tag-model">${data.modelDisplay.split('(')[0]}</span>
                 </td>
             `;
         }
@@ -280,13 +289,18 @@
         }
 
         function downloadCSV() {
-            if (results.length === 0) { alert("沒有數據可下載"); return; }
+            if (results.length === 0) { alert("無數據可下載"); return; }
             
-            let csv = "\uFEFFID,模型,策略,題目,AI回應,耗時(ms),狀態\n";
+            // CSV 表頭
+            let csv = "\uFEFFID,模型 (Model),策略 (Strategy),題目 (Prompt),AI 回應 (Output),耗時 (ms),狀態\n";
+            
             results.forEach(row => {
                 const q = `"${row.question.replace(/"/g, '""')}"`;
                 const o = `"${row.output.replace(/"/g, '""')}"`;
-                csv += `${row.id},${row.model},${row.strategy},${q},${o},${row.latency},${row.status}\n`;
+                const m = `"${row.modelDisplay.replace(/"/g, '""')}"`; // 存入 Gemini 3 Pro
+                const s = `"${row.strategyDisplay.replace(/"/g, '""')}"`; // 存入 中文策略名
+                
+                csv += `${row.id},${m},${s},${q},${o},${row.latency},${row.status}\n`;
             });
 
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
