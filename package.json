@@ -1,0 +1,9 @@
+{
+  "name": "ai-experiment-lab",
+  "version": "1.0.0",
+  "dependencies": {
+    "@google/generative-ai": "^0.1.0",
+    "openai": "^4.28.0",
+    "groq-sdk": "^0.3.3"
+  }
+}
