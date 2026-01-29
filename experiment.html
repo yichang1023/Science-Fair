@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>科展實驗控制台</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
+        .box { border: 1px solid #ccc; padding: 15px; margin-bottom: 20px; border-radius: 8px; background: #f9f9f9; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        textarea { width: 100%; height: 100px; }
+        button { padding: 10px 20px; background: #0066cc; color: white; border: none; cursor: pointer; font-size: 16px; }
+        #resultArea { white-space: pre-wrap; background: #fff; padding: 10px; border: 1px solid #ddd; }
+        .stat { color: red; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>🧪 科展數據收集控制台</h1>
+    
+    <div class="box">
+        <label>1. 選擇模型 (為了 RQ1)</label>
+        <select id="modelSelect">
+            <option value="gemini-1.5-flash">Gemini 1.5 Flash (快速版)</option>
+            <option value="gemini-1.5-pro">Gemini 1.5 Pro (聰明版)</option>
+        </select>
+    </div>
+
+    <div class="box">
+        <label>2. 選擇策略 (為了 RQ2)</label>
+        <select id="strategySelect" onchange="updatePromptTemplate()">
+            <option value="baseline">Baseline (直接問)</option>
+            <option value="persona">Persona (加上角色設定)</option>
+            <option value="context">Context (加上知識庫/RAG)</option>
+        </select>
+    </div>
+
+    <div class="box">
+        <label>3. 輸入測試題目 (User Input)</label>
+        <input type="text" id="userInput" placeholder="例如：請介紹故宮博物院..." style="width: 100%; padding: 8px;">
+    </div>
+
+    <div class="box">
+        <label>4. 實際發送的 Prompt (自動生成，請勿修改)</label>
+        <textarea id="finalPrompt" readonly></textarea>
+        <br><br>
+        <button onclick="runExperiment()">🚀 執行實驗並紀錄</button>
+    </div>
+
+    <div class="box">
+        <h3>📊 實驗結果 (請複製到 Excel)</h3>
+        <p>耗時 (RQ3): <span id="timeDisplay" class="stat">0</span> ms</p>
+        <p>AI 回應:</p>
+        <div id="resultArea">...等待執行...</div>
+    </div>
+
+    <script>
+        // 為了 RQ2 設計的策略樣板
+        function updatePromptTemplate() {
+            const strategy = document.getElementById('strategySelect').value;
+            const input = document.getElementById('userInput').value;
+            let final = input;
+
+            if (strategy === 'persona') {
+                final = "你是一位資深的台灣華語教師，請用台灣在地的語氣與用詞回答以下問題：\n" + input;
+            } else if (strategy === 'context') {
+                // 這裡模擬「知識注入」
+                final = "參考資訊：『國立故宮博物院位於台北市士林區，收藏近70萬件文物...』\n請根據上述資訊回答：\n" + input;
+            }
+            
+            document.getElementById('finalPrompt').value = final;
+        }
+
+        // 監聽輸入框，即時更新 Prompt
+        document.getElementById('userInput').addEventListener('input', updatePromptTemplate);
+
+        async function runExperiment() {
+            const prompt = document.getElementById('finalPrompt').value;
+            const model = document.getElementById('modelSelect').value;
+            const resultArea = document.getElementById('resultArea');
+            const timeDisplay = document.getElementById('timeDisplay');
+
+            resultArea.innerText = "生成中...";
+            
+            try {
+                const res = await fetch('/api/generate', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ prompt, model })
+                });
+                const data = await res.json();
+                
+                resultArea.innerText = data.output;
+                timeDisplay.innerText = data.latency; // 顯示後端回傳的時間
+            } catch (e) {
+                resultArea.innerText = "錯誤：" + e;
+            }
+        }
+    </script>
+</body>
+</html>
