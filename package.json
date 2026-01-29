@@ -1,5 +1,5 @@
 {
-  "name": "ai-experiment-lab",
+  "name": "Science-Fair",
   "version": "1.0.0",
   "dependencies": {
     "@google/generative-ai": "^0.1.0",
