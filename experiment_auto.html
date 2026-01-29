@@ -2,324 +2,140 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>⚡️ 2026 AI 幻覺評測實驗室 (Hotfix)</title>
+    <title>⚡️ 2026 AI 實驗室 (Safety Mode)</title>
     <style>
-        /* 2026 未來極簡風格 UI */
-        body { font-family: "Microsoft JhengHei", "Segoe UI", sans-serif; padding: 20px; background: #f0f4f8; max-width: 1200px; margin: 0 auto; color: #1a202c; }
-        h1 { color: #2b6cb0; text-align: center; font-weight: 900; letter-spacing: 1.5px; margin-bottom: 5px; }
-        
-        .date-badge { 
-            text-align: center; color: #718096; font-size: 14px; margin-bottom: 30px; font-family: monospace; 
-            background: #e2e8f0; padding: 4px 12px; border-radius: 15px; display: inline-block;
-        }
-        .subtitle-container { text-align: center; margin-bottom: 30px; }
-
-        .grid-container { display: grid; grid-template-columns: 340px 1fr; gap: 25px; }
-        .panel { background: white; padding: 25px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.04); border: 1px solid #e2e8f0; }
-        
-        label { font-weight: 800; display: block; margin-bottom: 8px; font-size: 15px; color: #2d3748; }
-        select, textarea, input { width: 100%; padding: 14px; border: 2px solid #edf2f7; border-radius: 10px; box-sizing: border-box; font-size: 15px; transition: 0.3s; background: #fff; color: #2d3748; }
-        select:focus, textarea:focus { border-color: #3182ce; outline: none; box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1); }
-        textarea { height: 180px; font-family: monospace; line-height: 1.6; }
-
-        .btn-group { display: flex; flex-direction: column; gap: 12px; margin-top: 25px; }
-        button { padding: 16px; border: none; border-radius: 10px; cursor: pointer; font-size: 16px; font-weight: bold; color: white; transition: 0.2s; box-shadow: 0 4px 12px rgba(0,0,0,0.08); display: flex; align-items: center; justify-content: center; gap: 8px; }
-        button:active { transform: scale(0.98); }
-        
-        .btn-run { background: linear-gradient(135deg, #48bb78, #38a169); }
-        .btn-stop { background: #fc8181; color: #742a2a; }
-        .btn-down { background: #63b3ed; color: #1a365d; }
-        button:disabled { background: #cbd5e0; cursor: not-allowed; box-shadow: none; color: #718096; }
-
-        .table-wrapper { border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; background: white; max-height: 750px; overflow-y: auto; }
-        table { width: 100%; border-collapse: collapse; font-size: 15px; }
-        th { background: #f7fafc; padding: 16px; text-align: left; font-weight: 700; color: #4a5568; position: sticky; top: 0; z-index: 10; border-bottom: 2px solid #e2e8f0; }
-        td { padding: 16px; border-bottom: 1px solid #edf2f7; vertical-align: top; line-height: 1.7; }
-        tr:hover { background-color: #ebf8ff; }
-
-        .tag { padding: 5px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; display: inline-block; }
-        .tag-model { background: #edf2f7; color: #4a5568; margin-top: 8px; font-size: 12px; }
-        .status-ok { color: #22543d; background: #c6f6d5; }
-        .status-wait { color: #744210; background: #fefcbf; }
-        .status-err { color: #742a2a; background: #fed7d7; }
-
-        .progress-container { margin-top: 20px; display: none; }
-        .progress-track { background: #edf2f7; height: 12px; border-radius: 6px; overflow: hidden; }
-        .progress-fill { background: #3182ce; height: 100%; width: 0%; transition: width 0.3s; }
-        .progress-text { text-align: right; font-size: 13px; color: #718096; margin-top: 6px; font-weight: 600; }
+        body { font-family: "Microsoft JhengHei", sans-serif; padding: 20px; background: #f4f6f9; max-width: 1200px; margin: 0 auto; }
+        h1 { color: #2c3e50; text-align: center; }
+        .panel { background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        select, textarea, button { width: 100%; padding: 10px; margin-top: 5px; border-radius: 6px; border: 1px solid #ccc; }
+        button { background: #27ae60; color: white; font-weight: bold; cursor: pointer; border: none; padding: 15px; }
+        button:hover { background: #219150; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background: #eee; }
+        .status-err { color: red; background: #fee; }
+        .status-ok { color: green; background: #eef; }
     </style>
 </head>
 <body>
 
-    <h1>⚡️ 2026 AI 幻覺評測實驗室</h1>
-    
-    <div class="subtitle-container">
-        <span class="date-badge">
-            📅 System Date: <span id="systemDateDisplay">Loading...</span> | Target: Gen-3 Models
-        </span>
-    </div>
+    <h1>⚡️ 2026 AI 實驗室 (安全模式)</h1>
+    <p style="text-align:center; color:#666;">已移除不支援的舊版模型，僅保留穩定版本</p>
 
-    <div class="grid-container">
-        <div class="sidebar">
-            <div class="panel">
-                <h3>🎛️ 實驗參數設定</h3>
-                
-                <label>1. 選擇模型 (Model Version)</label>
-                <select id="modelSelect">
-                    <optgroup label="Google (Gemini)">
-                        <option value="gemini-1.5-flash">Gemini 3 Flash (2026 High-Speed)</option>
-                        <option value="gemini-1.5-pro-latest">Gemini 3 Pro (2026 Flagship)</option>
-                        <option value="gemini-pro">Gemini 2 Pro (Compatibility Mode)</option>
-                    </optgroup>
-                    
-                    <optgroup label="OpenAI (GPT-5 Series)">
-                        <option value="gpt-4o">GPT-5.2 Thinking (Deep Reasoner)</option>
-                        <option value="gpt-4o-mini">GPT-5.2 Instant (Edge Model)</option>
-                    </optgroup>
-                    
-                    <optgroup label="xAI (Grok Gen-4)">
-                        <option value="llama-3.1-70b-versatile">Grok 4.1 Thinking (Open Weight)</option>
-                        <option value="llama-3.1-8b-instant">Grok 4.1 Flash (Ultra Fast)</option>
-                    </optgroup>
-                </select>
+    <div style="display:grid; grid-template-columns: 300px 1fr; gap:20px;">
+        <div class="panel">
+            <h3>⚙️ 設定</h3>
+            <label>選擇模型</label>
+            <select id="modelSelect">
+                <optgroup label="Google (推薦)">
+                    <option value="gemini-1.5-flash">Gemini 3 Flash (Fast & Stable)</option>
+                    <option value="gemini-1.5-pro">Gemini 3 Pro (High Quality)</option>
+                </optgroup>
+                <optgroup label="OpenAI">
+                    <option value="gpt-4o-mini">GPT-5.2 Instant</option>
+                    <option value="gpt-4o">GPT-5.2 Thinking</option>
+                </optgroup>
+                <optgroup label="Groq">
+                    <option value="llama-3.1-8b-instant">Grok 4.1 Flash</option>
+                    <option value="llama-3.1-70b-versatile">Grok 4.1 Thinking</option>
+                </optgroup>
+            </select>
 
-                <br>
-                <label>2. 生成策略 (Strategy)</label>
-                <select id="strategySelect">
-                    <option value="baseline">基準模式 (Baseline - 直接提問)</option>
-                    <option value="persona">角色扮演 (Persona - 華語教師)</option>
-                    <option value="context">知識注入 (Context - RAG 模擬)</option>
-                </select>
-                
-                <br>
-                <label>3. 測試題庫 (Input Data)</label>
-                <textarea id="questionList" placeholder="請貼上您的 50 題黃金測試題庫 (一行一題)..."></textarea>
-                
-                <div class="btn-group">
-                    <button class="btn-run" onclick="startBatch()" id="startBtn">▶ 啟動自動化測試</button>
-                    <button class="btn-stop" onclick="stopBatch()" id="stopBtn" disabled>⏹ 強制停止</button>
-                    <button class="btn-down" onclick="downloadCSV()" id="downBtn" disabled>📥 下載實驗數據 (CSV)</button>
-                </div>
-                
-                <div class="progress-container" id="progressBox">
-                    <div class="progress-track"><div class="progress-fill" id="progressBar"></div></div>
-                    <div class="progress-text" id="progressText">0 / 0</div>
-                </div>
-            </div>
+            <br><br>
+            <label>生成策略</label>
+            <select id="strategySelect">
+                <option value="baseline">基準模式 (Baseline)</option>
+                <option value="persona">角色扮演 (Persona)</option>
+            </select>
+
+            <br><br>
+            <label>題庫 (一行一題)</label>
+            <textarea id="questionList" placeholder="請輸入題目...">台灣最高的山是哪一座？</textarea>
+
+            <br><br>
+            <button onclick="startBatch()" id="startBtn">▶ 開始測試</button>
+            <button onclick="downloadCSV()" style="background:#3498db; margin-top:10px;">📥 下載 CSV</button>
+            <div id="progressBox" style="margin-top:10px; color:#666;"></div>
         </div>
 
-        <div class="main-content">
-            <div class="panel" style="height: calc(100% - 70px); border-top: 5px solid #3182ce;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                    <h3 style="margin:0;">📊 實時數據監控 (Live Monitor)</h3>
-                    <span id="statusBadge" class="tag status-wait">系統就緒 (Ready)</span>
-                </div>
-                
-                <div class="table-wrapper">
-                    <table id="resultTable">
-                        <thead>
-                            <tr>
-                                <th width="8%">ID</th>
-                                <th width="30%">測試題目 (Prompt)</th>
-                                <th width="45%">AI 回應內容 (Output)</th>
-                                <th width="17%">效能指標 (Stats)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td colspan="4" style="text-align:center; padding:60px; color:#a0aec0;">
-                                    請確認已連接 2026 測試網絡，貼上題目並按下啟動...
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+        <div class="panel">
+            <h3>📊 結果監控</h3>
+            <div style="max-height:600px; overflow-y:auto;">
+                <table id="resultTable">
+                    <thead>
+                        <tr><th>ID</th><th>題目</th><th>回應</th><th>狀態</th></tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
             </div>
         </div>
     </div>
 
     <script>
-        // === 初始化：自動更新日期 ===
-        window.onload = function() {
-            const today = new Date();
-            const dateStr = today.getFullYear() + "-" + 
-                           String(today.getMonth() + 1).padStart(2, '0') + "-" + 
-                           String(today.getDate()).padStart(2, '0');
-            document.getElementById('systemDateDisplay').innerText = dateStr;
-        };
-
-        // === 實驗核心邏輯 ===
-        let isRunning = false;
-        let results = [];
         const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+        let results = [];
 
         async function startBatch() {
-            const rawText = document.getElementById('questionList').value.trim();
-            if (!rawText) { alert("⚠️ 系統警告：檢測不到輸入題目！"); return; }
+            const questions = document.getElementById('questionList').value.split('\n').filter(q => q.trim());
+            const model = document.getElementById('modelSelect').value;
+            const strategy = document.getElementById('strategySelect').value;
             
-            const questions = rawText.split('\n').filter(line => line.trim() !== '');
-            const modelSelect = document.getElementById('modelSelect');
-            const modelValue = modelSelect.value; 
-            const modelName = modelSelect.options[modelSelect.selectedIndex].text;
+            if(!questions.length) { alert("請輸入題目"); return; }
             
-            const strategySelect = document.getElementById('strategySelect');
-            const strategyValue = strategySelect.value;
-            const strategyName = strategySelect.options[strategySelect.selectedIndex].text;
-            
-            isRunning = true;
-            results = []; 
-            document.querySelector('#resultTable tbody').innerHTML = ''; 
-            toggleControls(true);
-            document.getElementById('statusBadge').innerText = "測試執行中...";
-            document.getElementById('statusBadge').className = "tag status-ok";
-            document.getElementById('progressBox').style.display = 'block';
+            document.querySelector('#resultTable tbody').innerHTML = '';
+            results = [];
 
             for (let i = 0; i < questions.length; i++) {
-                if (!isRunning) break;
-
                 const q = questions[i];
-                updateProgress(i + 1, questions.length);
+                document.getElementById('progressBox').innerText = `正在測試: ${i+1} / ${questions.length}`;
+                
+                let prompt = q;
+                if(strategy === 'persona') prompt = `你是一位台灣老師，請用繁體中文回答：${q}`;
 
-                let finalPrompt = q;
-                if (strategyValue === 'persona') {
-                    finalPrompt = `你是一位專業的台灣華語教師，請使用台灣在地的繁體中文詞彙與語氣，回答以下問題：\n${q}`;
-                } else if (strategyValue === 'context') {
-                    finalPrompt = `參考資訊：(請填入本題對應的正確知識)... \n請根據上述資訊回答：\n${q}`;
-                }
+                // 更新表格顯示 Loading
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${i+1}</td><td>${q}</td><td>...</td><td>Running</td>`;
+                document.querySelector('#resultTable tbody').appendChild(tr);
 
-                const tr = addTableRow(i + 1, q);
-                scrollToBottom();
-
-                const rowData = {
-                    id: i + 1,
-                    question: q,
-                    modelDisplay: modelName,
-                    strategyDisplay: strategyName,
-                    output: "",
-                    latency: 0,
-                    status: "Running"
-                };
-
+                let output = "", status = "Success", latency = 0;
+                
                 try {
                     const res = await fetch('/api/generate', {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({ prompt: finalPrompt, model: modelValue })
+                        body: JSON.stringify({ prompt: prompt, model: model })
                     });
                     const data = await res.json();
-
+                    
                     if (data.error) throw new Error(data.error);
-
-                    rowData.output = data.output;
-                    rowData.latency = data.latency;
-                    rowData.status = "Success";
-                    updateTableRow(tr, rowData);
+                    output = data.output;
+                    latency = data.latency;
 
                 } catch (e) {
-                    rowData.output = "Error: " + e.message;
-                    rowData.status = "Failed";
-                    updateTableRow(tr, rowData);
+                    output = "Error: " + e.message;
+                    status = "Failed";
                 }
 
-                results.push(rowData);
-                if (i < questions.length - 1) await sleep(2500); 
+                // 更新結果
+                results.push({id: i+1, q, output, model, status, latency});
+                tr.innerHTML = `<td>${i+1}</td><td>${q}</td><td>${output}</td><td class="${status === 'Success'?'status-ok':'status-err'}">${status}</td>`;
+                
+                await sleep(2000);
             }
-
-            isRunning = false;
-            toggleControls(false);
-            document.getElementById('statusBadge').innerText = "測試完成";
-            document.getElementById('statusBadge').className = "tag status-wait";
-            
-            if(confirm("測試序列已完成！是否匯出 CSV 報表？")) {
-                downloadCSV();
-            }
-        }
-
-        function stopBatch() {
-            if(confirm("警告：確定要終止目前測試嗎？")) {
-                isRunning = false;
-                document.getElementById('statusBadge').innerText = "已終止";
-                document.getElementById('statusBadge').className = "tag status-err";
-                toggleControls(false);
-            }
-        }
-
-        function toggleControls(disable) {
-            document.getElementById('startBtn').disabled = disable;
-            document.getElementById('stopBtn').disabled = !disable;
-            document.getElementById('downBtn').disabled = disable;
-            document.getElementById('modelSelect').disabled = disable;
-            document.getElementById('strategySelect').disabled = disable;
-            document.getElementById('questionList').disabled = disable;
-        }
-
-        function updateProgress(current, total) {
-            const pct = Math.round((current / total) * 100) + "%";
-            document.getElementById('progressBar').style.width = pct;
-            document.getElementById('progressText').innerText = `${current} / ${total} (${pct})`;
-        }
-
-        function addTableRow(id, question) {
-            const tbody = document.querySelector('#resultTable tbody');
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td><strong>${id}</strong></td>
-                <td>${question}</td>
-                <td style="color:#a0aec0;"><i>生成中...</i></td>
-                <td><span class="tag status-wait">Pending</span></td>
-            `;
-            tbody.appendChild(tr);
-            return tr;
-        }
-
-        function updateTableRow(tr, data) {
-            const cleanOutput = data.output.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-            const statusClass = data.status === 'Success' ? 'status-ok' : 'status-err';
-            const latencyText = data.status === 'Success' ? `${data.latency} ms` : 'Error';
-            const displayName = data.modelDisplay.split('(')[0].trim();
-            
-            tr.innerHTML = `
-                <td><strong>${data.id}</strong></td>
-                <td>${data.question}</td>
-                <td><div style="max-height:100px; overflow-y:auto;">${cleanOutput}</div></td>
-                <td>
-                    <span style="font-weight:bold; color:#2d3748;">${latencyText}</span><br>
-                    <span class="tag tag-model">${displayName}</span>
-                </td>
-            `;
-        }
-
-        function scrollToBottom() {
-            const container = document.querySelector('.table-wrapper');
-            container.scrollTop = container.scrollHeight;
+            alert("完成！");
         }
 
         function downloadCSV() {
-            if (results.length === 0) { alert("無數據可匯出"); return; }
-            
-            let csv = "\uFEFFID,模型型號 (Model),生成策略 (Strategy),題目 (Prompt),AI 回應 (Output),耗時 (ms),狀態\n";
-            
-            results.forEach(row => {
-                const q = `"${row.question.replace(/"/g, '""')}"`;
-                const o = `"${row.output.replace(/"/g, '""')}"`;
-                const m = `"${row.modelDisplay.replace(/"/g, '""')}"`; 
-                const s = `"${row.strategyDisplay.replace(/"/g, '""')}"`; 
-                
-                csv += `${row.id},${m},${s},${q},${o},${row.latency},${row.status}\n`;
+            let csv = "\uFEFFID,Model,Question,Output,Status\n";
+            results.forEach(r => {
+                csv += `${r.id},${r.model},"${r.q}","${r.output.replace(/"/g, '""')}",${r.status}\n`;
             });
-
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
+            const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
             const link = document.createElement("a");
-            link.href = url;
-            
-            const now = new Date();
-            const timeStr = now.toISOString().slice(0,10); 
-            link.download = `實驗數據_${timeStr}.csv`;
-            
+            link.href = URL.createObjectURL(blob);
+            link.download = `data_${new Date().getTime()}.csv`;
             document.body.appendChild(link);
             link.click();
-            document.body.removeChild(link);
         }
     </script>
 </body>
