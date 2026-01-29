@@ -2,18 +2,23 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>⚡️ 2026 AI 幻覺評測實驗室 (SOTA Edition)</title>
+    <title>⚡️ 2026 AI 幻覺評測實驗室 (Auto-Date)</title>
     <style>
         /* 2026 未來極簡風格 UI */
         body { font-family: "Microsoft JhengHei", "Segoe UI", sans-serif; padding: 20px; background: #f0f4f8; max-width: 1200px; margin: 0 auto; color: #1a202c; }
         h1 { color: #2b6cb0; text-align: center; font-weight: 900; letter-spacing: 1.5px; margin-bottom: 5px; }
-        .subtitle { text-align: center; color: #718096; font-size: 14px; margin-bottom: 30px; font-family: monospace; }
         
+        /* 日期顯示區塊 */
+        .date-badge { 
+            text-align: center; color: #718096; font-size: 14px; margin-bottom: 30px; font-family: monospace; 
+            background: #e2e8f0; padding: 4px 12px; border-radius: 15px; display: inline-block;
+        }
+        .subtitle-container { text-align: center; margin-bottom: 30px; }
+
         .grid-container { display: grid; grid-template-columns: 340px 1fr; gap: 25px; }
         .panel { background: white; padding: 25px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.04); border: 1px solid #e2e8f0; }
         
         label { font-weight: 800; display: block; margin-bottom: 8px; font-size: 15px; color: #2d3748; }
-        /* 增加選單高度與質感 */
         select, textarea, input { width: 100%; padding: 14px; border: 2px solid #edf2f7; border-radius: 10px; box-sizing: border-box; font-size: 15px; transition: 0.3s; background: #fff; color: #2d3748; }
         select:focus, textarea:focus { border-color: #3182ce; outline: none; box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1); }
         textarea { height: 180px; font-family: monospace; line-height: 1.6; }
@@ -22,27 +27,23 @@
         button { padding: 16px; border: none; border-radius: 10px; cursor: pointer; font-size: 16px; font-weight: bold; color: white; transition: 0.2s; box-shadow: 0 4px 12px rgba(0,0,0,0.08); display: flex; align-items: center; justify-content: center; gap: 8px; }
         button:active { transform: scale(0.98); }
         
-        /* 2026 配色系統 */
-        .btn-run { background: linear-gradient(135deg, #48bb78, #38a169); } /* 綠色 */
-        .btn-stop { background: #fc8181; color: #742a2a; } /* 紅色 */
-        .btn-down { background: #63b3ed; color: #1a365d; } /* 藍色 */
+        .btn-run { background: linear-gradient(135deg, #48bb78, #38a169); }
+        .btn-stop { background: #fc8181; color: #742a2a; }
+        .btn-down { background: #63b3ed; color: #1a365d; }
         button:disabled { background: #cbd5e0; cursor: not-allowed; box-shadow: none; color: #718096; }
 
-        /* 結果表格 */
         .table-wrapper { border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; background: white; max-height: 750px; overflow-y: auto; }
         table { width: 100%; border-collapse: collapse; font-size: 15px; }
         th { background: #f7fafc; padding: 16px; text-align: left; font-weight: 700; color: #4a5568; position: sticky; top: 0; z-index: 10; border-bottom: 2px solid #e2e8f0; }
         td { padding: 16px; border-bottom: 1px solid #edf2f7; vertical-align: top; line-height: 1.7; }
         tr:hover { background-color: #ebf8ff; }
 
-        /* 狀態標籤 */
         .tag { padding: 5px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; display: inline-block; }
         .tag-model { background: #edf2f7; color: #4a5568; margin-top: 8px; font-size: 12px; }
         .status-ok { color: #22543d; background: #c6f6d5; }
         .status-wait { color: #744210; background: #fefcbf; }
         .status-err { color: #742a2a; background: #fed7d7; }
 
-        /* 進度條 */
         .progress-container { margin-top: 20px; display: none; }
         .progress-track { background: #edf2f7; height: 12px; border-radius: 6px; overflow: hidden; }
         .progress-fill { background: #3182ce; height: 100%; width: 0%; transition: width 0.3s; }
@@ -52,7 +53,12 @@
 <body>
 
     <h1>⚡️ 2026 AI 幻覺評測實驗室</h1>
-    <p class="subtitle">System Date: 2026-01-29 | Target: Gemini 3 / GPT-5.2 / Grok 4.1</p>
+    
+    <div class="subtitle-container">
+        <span class="date-badge">
+            📅 System Date: <span id="systemDateDisplay">Loading...</span> | Target: Gen-3 Models
+        </span>
+    </div>
 
     <div class="grid-container">
         <div class="sidebar">
@@ -90,7 +96,7 @@
                 <textarea id="questionList" placeholder="請貼上您的 50 題黃金測試題庫 (一行一題)..."></textarea>
                 
                 <div class="btn-group">
-                    <button class="btn-run" onclick="startBatch()" id="startBtn">▶ 啟動 2026 自動化測試</button>
+                    <button class="btn-run" onclick="startBatch()" id="startBtn">▶ 啟動自動化測試</button>
                     <button class="btn-stop" onclick="stopBatch()" id="stopBtn" disabled>⏹ 強制停止</button>
                     <button class="btn-down" onclick="downloadCSV()" id="downBtn" disabled>📥 下載實驗數據 (CSV)</button>
                 </div>
@@ -133,45 +139,48 @@
     </div>
 
     <script>
-        // === 2026 實驗核心 ===
+        // === 初始化：自動更新日期 ===
+        window.onload = function() {
+            const today = new Date();
+            // 格式化為 YYYY-MM-DD
+            const dateStr = today.getFullYear() + "-" + 
+                           String(today.getMonth() + 1).padStart(2, '0') + "-" + 
+                           String(today.getDate()).padStart(2, '0');
+            document.getElementById('systemDateDisplay').innerText = dateStr;
+        };
+
+        // === 實驗核心邏輯 ===
         let isRunning = false;
         let results = [];
-        // 模擬 2026 高速網絡，但為避免觸發 API 限制，仍保持安全間隔
         const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
         async function startBatch() {
-            // 1. 讀取輸入
             const rawText = document.getElementById('questionList').value.trim();
             if (!rawText) { alert("⚠️ 系統警告：檢測不到輸入題目！"); return; }
             
             const questions = rawText.split('\n').filter(line => line.trim() !== '');
-            
-            // 關鍵：取得顯示名稱 (Gemini 3 Pro) 而非 底層 ID
             const modelSelect = document.getElementById('modelSelect');
-            const modelValue = modelSelect.value; // 送給 API 的 (gemini-1.5)
-            const modelName = modelSelect.options[modelSelect.selectedIndex].text; // 存給 CSV 的 (Gemini 3 Pro)
+            const modelValue = modelSelect.value; 
+            const modelName = modelSelect.options[modelSelect.selectedIndex].text;
             
             const strategySelect = document.getElementById('strategySelect');
             const strategyValue = strategySelect.value;
             const strategyName = strategySelect.options[strategySelect.selectedIndex].text;
             
-            // 2. 初始化介面
             isRunning = true;
             results = []; 
             document.querySelector('#resultTable tbody').innerHTML = ''; 
             toggleControls(true);
-            document.getElementById('statusBadge').innerText = "測試執行中 (Processing)";
+            document.getElementById('statusBadge').innerText = "測試執行中...";
             document.getElementById('statusBadge').className = "tag status-ok";
             document.getElementById('progressBox').style.display = 'block';
 
-            // 3. 執行迴圈
             for (let i = 0; i < questions.length; i++) {
                 if (!isRunning) break;
 
                 const q = questions[i];
                 updateProgress(i + 1, questions.length);
 
-                // 建構 Prompt (中文化策略)
                 let finalPrompt = q;
                 if (strategyValue === 'persona') {
                     finalPrompt = `你是一位專業的台灣華語教師，請使用台灣在地的繁體中文詞彙與語氣，回答以下問題：\n${q}`;
@@ -179,27 +188,23 @@
                     finalPrompt = `參考資訊：(請填入本題對應的正確知識)... \n請根據上述資訊回答：\n${q}`;
                 }
 
-                // 新增行 (Loading)
                 const tr = addTableRow(i + 1, q);
                 scrollToBottom();
 
-                // 準備數據物件
                 const rowData = {
                     id: i + 1,
                     question: q,
-                    modelDisplay: modelName, // CSV 會看到 "Gemini 3 Pro"
-                    strategyDisplay: strategyName, // CSV 會看到 "角色扮演"
+                    modelDisplay: modelName,
+                    strategyDisplay: strategyName,
                     output: "",
                     latency: 0,
                     status: "Running"
                 };
 
                 try {
-                    // --- 呼叫底層 API ---
                     const res = await fetch('/api/generate', {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
-                        // 這裡傳 modelValue 確保 API 成功連線
                         body: JSON.stringify({ prompt: finalPrompt, model: modelValue })
                     });
                     const data = await res.json();
@@ -218,15 +223,12 @@
                 }
 
                 results.push(rowData);
-
-                // 智慧冷卻：模擬運算間隔
                 if (i < questions.length - 1) await sleep(2500); 
             }
 
-            // 結束
             isRunning = false;
             toggleControls(false);
-            document.getElementById('statusBadge').innerText = "測試完成 (Complete)";
+            document.getElementById('statusBadge').innerText = "測試完成";
             document.getElementById('statusBadge').className = "tag status-wait";
             
             if(confirm("測試序列已完成！是否匯出 CSV 報表？")) {
@@ -237,7 +239,7 @@
         function stopBatch() {
             if(confirm("警告：確定要終止目前測試嗎？")) {
                 isRunning = false;
-                document.getElementById('statusBadge').innerText = "已終止 (Terminated)";
+                document.getElementById('statusBadge').innerText = "已終止";
                 document.getElementById('statusBadge').className = "tag status-err";
                 toggleControls(false);
             }
@@ -272,12 +274,9 @@
         }
 
         function updateTableRow(tr, data) {
-            // 防止 HTML 注入
             const cleanOutput = data.output.replace(/</g, "&lt;").replace(/>/g, "&gt;");
             const statusClass = data.status === 'Success' ? 'status-ok' : 'status-err';
             const latencyText = data.status === 'Success' ? `${data.latency} ms` : 'Error';
-            
-            // 顯示 2026 模型名稱 (去掉括號後的說明，讓畫面更乾淨)
             const displayName = data.modelDisplay.split('(')[0].trim();
             
             tr.innerHTML = `
@@ -299,13 +298,11 @@
         function downloadCSV() {
             if (results.length === 0) { alert("無數據可匯出"); return; }
             
-            // CSV 表頭 (中文)
             let csv = "\uFEFFID,模型型號 (Model),生成策略 (Strategy),題目 (Prompt),AI 回應 (Output),耗時 (ms),狀態\n";
             
             results.forEach(row => {
                 const q = `"${row.question.replace(/"/g, '""')}"`;
                 const o = `"${row.output.replace(/"/g, '""')}"`;
-                // 確保 CSV 裡記錄的是 "Gemini 3 Pro"
                 const m = `"${row.modelDisplay.replace(/"/g, '""')}"`; 
                 const s = `"${row.strategyDisplay.replace(/"/g, '""')}"`; 
                 
@@ -316,8 +313,12 @@
             const url = URL.createObjectURL(blob);
             const link = document.createElement("a");
             link.href = url;
-            // 檔名加上日期
-            link.download = `實驗數據_2026-01-29_${new Date().getTime()}.csv`;
+            
+            // 檔名加上「當下的日期」
+            const now = new Date();
+            const timeStr = now.toISOString().slice(0,10); // YYYY-MM-DD
+            link.download = `實驗數據_${timeStr}.csv`;
+            
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
