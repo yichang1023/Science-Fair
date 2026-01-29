@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>⚡️ 科展自動化測試機 (Batch Runner)</title>
+    <style>
+        body { font-family: "Microsoft JhengHei", sans-serif; padding: 20px; background: #f0f2f5; max-width: 1000px; margin: 0 auto; }
+        h1 { color: #2c3e50; text-align: center; }
+        .panel { background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        label { font-weight: bold; display: block; margin-bottom: 5px; }
+        select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        textarea { height: 150px; font-family: monospace; }
+        
+        .btn-group { display: flex; gap: 10px; margin-top: 10px; }
+        button { padding: 12px 20px; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; flex: 1; font-weight: bold; color: white; }
+        .btn-run { background: #27ae60; }
+        .btn-run:disabled { background: #95a5a6; cursor: not-allowed; }
+        .btn-stop { background: #c0392b; }
+        .btn-down { background: #2980b9; }
+
+        /* 進度條 */
+        .progress-container { width: 100%; background-color: #e0e0e0; border-radius: 10px; margin: 20px 0; display: none; }
+        .progress-bar { width: 0%; height: 20px; background-color: #27ae60; border-radius: 10px; transition: width 0.3s; text-align: center; color: white; font-size: 12px; line-height: 20px; }
+
+        /* 結果表格 */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; vertical-align: top; }
+        th { background-color: #f2f2f2; position: sticky; top: 0; }
+        .status-ok { color: green; }
+        .status-err { color: red; }
+    </style>
+</head>
+<body>
+
+    <h1>⚡️ 科展自動化批次測試機</h1>
+    <p style="text-align:center; color:#666;">自動隊列執行系統 (Auto-Queue System)</p>
+
+    <div class="panel">
+        <h3>1. 實驗設定</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div>
+                <label>選擇模型 (Model)</label>
+                <select id="modelSelect">
+                    <optgroup label="Google">
+                        <option value="gemini-1.5-flash">Gemini 1.5 Flash (快速)</option>
+                        <option value="gemini-1.5-pro">Gemini 1.5 Pro (精確)</option>
+                    </optgroup>
+                    <optgroup label="OpenAI">
+                        <option value="gpt-4o-mini">GPT-4o Mini</option>
+                        <option value="gpt-4o">GPT-4o</option>
+                    </optgroup>
+                    <optgroup label="Groq">
+                        <option value="llama3-8b-8192">Llama 3 8B</option>
+                        <option value="llama3-70b-8192">Llama 3 70B</option>
+                    </optgroup>
+                </select>
+            </div>
+            <div>
+                <label>選擇策略 (Strategy)</label>
+                <select id="strategySelect">
+                    <option value="baseline">Baseline (直接問)</option>
+                    <option value="persona">Persona (角色設定)</option>
+                    <option value="context">Context (知識注入)</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <label>2. 貼上題目清單 (一行一題)</label>
+        <textarea id="questionList" placeholder="例如：
+台灣最高的山是哪一座？
+台北捷運什麼時候不能吃東西？
+請介紹珍珠奶茶的歷史。"></textarea>
+        <div style="font-size: 12px; color: #666; margin-top: 5px;">⚠️ 建議每次測試 20-50 題，避免瀏覽器卡頓。</div>
+    </div>
+
+    <div class="panel">
+        <h3>3. 執行控制</h3>
+        <div class="progress-container" id="progressBox">
+            <div class="progress-bar" id="progressBar">0%</div>
+        </div>
+        
+        <div class="btn-group">
+            <button class="btn-run" onclick="startBatch()" id="startBtn">▶ 開始自動測試</button>
+            <button class="btn-stop" onclick="stopBatch()" id="stopBtn" disabled>⏹ 強制停止</button>
+            <button class="btn-down" onclick="downloadCSV()" id="downBtn" disabled>📥 下載 CSV 報表</button>
+        </div>
+    </div>
+
+    <div class="panel">
+        <h3>4. 即時數據監控</h3>
+        <div style="max-height: 400px; overflow-y: auto;">
+            <table id="resultTable">
+                <thead>
+                    <tr>
+                        <th width="5%">#</th>
+                        <th width="30%">題目</th>
+                        <th width="40%">AI 回應</th>
+                        <th width="10%">耗時</th>
+                        <th width="15%">狀態</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let isRunning = false;
+        let results = []; // 儲存所有數據
+
+        // 延遲函式 (避免打太快被鎖)
+        const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+        async function startBatch() {
+            // 1. 準備資料
+            const rawText = document.getElementById('questionList').value.trim();
+            if (!rawText) { alert("請先輸入題目！"); return; }
+            
+            const questions = rawText.split('\n').filter(line => line.trim() !== '');
+            const model = document.getElementById('modelSelect').value;
+            const strategy = document.getElementById('strategySelect').value;
+            
+            // 2. 初始化 UI
+            isRunning = true;
+            results = []; // 清空舊資料
+            document.querySelector('#resultTable tbody').innerHTML = ''; // 清空表格
+            updateUIState(true);
+            
+            const total = questions.length;
+            const progressBar = document.getElementById('progressBar');
+            document.getElementById('progressBox').style.display = 'block';
+
+            // 3. 開始迴圈 (Loop)
+            for (let i = 0; i < total; i++) {
+                if (!isRunning) break; // 允許中途停止
+
+                const q = questions[i];
+                updateProgress(i + 1, total);
+
+                // 組合 Prompt
+                let finalPrompt = q;
+                if (strategy === 'persona') {
+                    finalPrompt = `你是一位台灣華語教師，請用繁體中文回答：\n${q}`;
+                } else if (strategy === 'context') {
+                    finalPrompt = `參考資訊：(請在此填入固定知識)... \n回答：\n${q}`;
+                }
+
+                // --- 呼叫 API ---
+                const rowData = {
+                    id: i + 1,
+                    question: q,
+                    model: model,
+                    strategy: strategy,
+                    output: "",
+                    latency: 0,
+                    status: "Pending"
+                };
+
+                try {
+                    const res = await fetch('/api/generate', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ prompt: finalPrompt, model: model })
+                    });
+                    const data = await res.json();
+
+                    if (data.error) throw new Error(data.error);
+
+                    rowData.output = data.output;
+                    rowData.latency = data.latency;
+                    rowData.status = "Success";
+
+                } catch (e) {
+                    rowData.output = "Error: " + e.message;
+                    rowData.status = "Failed";
+                }
+
+                // 儲存並顯示
+                results.push(rowData);
+                addTableRow(rowData);
+
+                // --- 關鍵：休息 2 秒 ---
+                // 免費版 API 通常限制一分鐘 15-60 次，休息 2000ms 比較安全
+                await sleep(2000); 
+            }
+
+            isRunning = false;
+            updateUIState(false);
+            alert("測試完成！請點擊下載 CSV。");
+        }
+
+        function stopBatch() {
+            isRunning = false;
+            alert("已停止，目前的數據仍可下載。");
+            updateUIState(false);
+        }
+
+        function updateProgress(current, total) {
+            const pct = Math.round((current / total) * 100) + "%";
+            const bar = document.getElementById('progressBar');
+            bar.style.width = pct;
+            bar.innerText = `${current} / ${total} (${pct})`;
+        }
+
+        function addTableRow(data) {
+            const tbody = document.querySelector('#resultTable tbody');
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${data.id}</td>
+                <td>${data.question}</td>
+                <td><div style="max-height:100px; overflow-y:auto;">${data.output}</div></td>
+                <td>${data.latency} ms</td>
+                <td class="${data.status === 'Success' ? 'status-ok' : 'status-err'}">${data.status}</td>
+            `;
+            tbody.appendChild(tr);
+        }
+
+        function updateUIState(running) {
+            document.getElementById('startBtn').disabled = running;
+            document.getElementById('stopBtn').disabled = !running;
+            document.getElementById('downBtn').disabled = running;
+        }
+
+        // 下載 CSV (Excel 可讀格式)
+        function downloadCSV() {
+            if (results.length === 0) { alert("沒有數據可下載"); return; }
+
+            // 加入 BOM 讓 Excel 正確識別 UTF-8 中文
+            let csvContent = "\uFEFF"; 
+            
+            // 表頭
+            csvContent += "ID,模型,策略,題目,AI回應,耗時(ms),狀態\n";
+
+            // 內容
+            results.forEach(row => {
+                // 處理 CSV 特殊字元 (換行、逗號都要用引號包起來)
+                const cleanOutput = `"${row.output.replace(/"/g, '""')}"`;
+                const cleanQ = `"${row.question.replace(/"/g, '""')}"`;
+                
+                csvContent += `${row.id},${row.model},${row.strategy},${cleanQ},${cleanOutput},${row.latency},${row.status}\n`;
+            });
+
+            // 建立下載連結
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", `實驗數據_${new Date().getTime()}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>
