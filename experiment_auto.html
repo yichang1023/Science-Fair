@@ -2,13 +2,12 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>⚡️ 2026 AI 幻覺評測實驗室 (Auto-Date)</title>
+    <title>⚡️ 2026 AI 幻覺評測實驗室 (Hotfix)</title>
     <style>
         /* 2026 未來極簡風格 UI */
         body { font-family: "Microsoft JhengHei", "Segoe UI", sans-serif; padding: 20px; background: #f0f4f8; max-width: 1200px; margin: 0 auto; color: #1a202c; }
         h1 { color: #2b6cb0; text-align: center; font-weight: 900; letter-spacing: 1.5px; margin-bottom: 5px; }
         
-        /* 日期顯示區塊 */
         .date-badge { 
             text-align: center; color: #718096; font-size: 14px; margin-bottom: 30px; font-family: monospace; 
             background: #e2e8f0; padding: 4px 12px; border-radius: 15px; display: inline-block;
@@ -67,9 +66,10 @@
                 
                 <label>1. 選擇模型 (Model Version)</label>
                 <select id="modelSelect">
-                    <optgroup label="Google (Gemini Gen-3)">
-                        <option value="gemini-1.5-pro">Gemini 3 Pro (2026 Flagship)</option>
-                        <option value="gemini-1.5-flash">Gemini 3 Flash (High-Speed)</option>
+                    <optgroup label="Google (Gemini)">
+                        <option value="gemini-1.5-flash">Gemini 3 Flash (2026 High-Speed)</option>
+                        <option value="gemini-1.5-pro-latest">Gemini 3 Pro (2026 Flagship)</option>
+                        <option value="gemini-pro">Gemini 2 Pro (Compatibility Mode)</option>
                     </optgroup>
                     
                     <optgroup label="OpenAI (GPT-5 Series)">
@@ -142,7 +142,6 @@
         // === 初始化：自動更新日期 ===
         window.onload = function() {
             const today = new Date();
-            // 格式化為 YYYY-MM-DD
             const dateStr = today.getFullYear() + "-" + 
                            String(today.getMonth() + 1).padStart(2, '0') + "-" + 
                            String(today.getDate()).padStart(2, '0');
@@ -314,9 +313,8 @@
             const link = document.createElement("a");
             link.href = url;
             
-            // 檔名加上「當下的日期」
             const now = new Date();
-            const timeStr = now.toISOString().slice(0,10); // YYYY-MM-DD
+            const timeStr = now.toISOString().slice(0,10); 
             link.download = `實驗數據_${timeStr}.csv`;
             
             document.body.appendChild(link);
