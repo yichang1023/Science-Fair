@@ -45,11 +45,11 @@ module.exports = async (req, res) => {
         } else {
              if (!process.env.GEMINI_API_KEY) throw new Error("缺少 GEMINI_API_KEY");
              
-             // [關鍵] 這裡不檢查版本，因為 package.json 已經強制更新了
              const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
              
-             // [指定模型] 只有 1.5 Flash 是目前最穩定的免費模型
-             // 如果這個還報錯 404，那就一定是 package.json 沒生效
+             // [絕對指令] 不管前端傳什麼，這裡強制鎖定 1.5 Flash
+             // 這是目前唯一保證能用的免費模型
+             console.log("正在強制呼叫 gemini-1.5-flash...");
              const geminiModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
              
              const result = await geminiModel.generateContent(prompt);
@@ -62,10 +62,11 @@ module.exports = async (req, res) => {
     } catch (error) {
         console.error("Server Error:", error);
         
-        // 幫你把錯誤訊息翻譯成中文，讓你知道下一步怎麼做
         let errorMsg = `API 錯誤: ${error.message}`;
-        if (error.message.includes("404") && error.message.includes("gemini-1.5-flash")) {
-             errorMsg = "核心錯誤：Vercel 尚未安裝新版驅動。請確認 GitHub 上的 package.json 裡的 @google/generative-ai 是 ^0.21.0 版本，並重新部署。";
+        
+        // 如果這裡報錯說 "gemini-1.5-flash not found"，那就是 package.json 沒更新
+        if (error.message.includes("not found") && error.message.includes("1.5-flash")) {
+             errorMsg = "嚴重錯誤：Vercel 正在使用舊版驅動程式，不認識 1.5 Flash。請檢查 package.json 版本是否為 ^0.21.0";
         }
 
         res.status(500).json({ 
