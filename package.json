@@ -1,12 +1,12 @@
 {
-  "name": "Science-Fair",
-  "version": "1.0.0",
+  "name": "gpt-hallucination-research-v6",
+  "version": "6.0.0",
+  "description": "Empirical Analysis of GPT-4 vs GPT-5 Hallucination Patterns",
   "engines": {
     "node": "18.x"
   },
   "dependencies": {
-    "@google/generative-ai": "^0.21.0",
     "openai": "^4.28.0",
-    "groq-sdk": "^0.3.3"
+    "cors": "^2.8.5"
   }
 }
