@@ -2,120 +2,129 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>🧪 2026 LLM 幻覺量化評測實驗室 (Journal Grade)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧪 GPT-5 Hallucination Research Lab (V6.0)</title>
     <style>
-        body { font-family: "Segoe UI", "Microsoft JhengHei", sans-serif; padding: 20px; background: #f0f2f5; max-width: 1400px; margin: 0 auto; color: #1e293b; }
-        header { text-align: center; margin-bottom: 25px; }
-        h1 { margin: 0; font-weight: 800; color: #0f172a; }
-        .subtitle { color: #64748b; font-size: 0.9em; margin-top: 5px; }
+        /* 基礎設定 */
+        :root { --primary: #2563eb; --danger: #ef4444; --success: #10b981; --bg: #f8fafc; --card: #ffffff; }
+        body { font-family: "Segoe UI", "Microsoft JhengHei", sans-serif; background: var(--bg); color: #1e293b; padding: 20px; max-width: 1400px; margin: 0 auto; }
         
-        /* 佈局 */
-        .grid { display: grid; grid-template-columns: 380px 1fr; gap: 25px; }
+        /* 標題區 */
+        header { text-align: center; padding-bottom: 20px; border-bottom: 2px solid #e2e8f0; margin-bottom: 30px; }
+        h1 { margin: 0; font-size: 2em; font-weight: 800; color: #0f172a; }
+        .badge { background: #0f172a; color: #facc15; padding: 5px 12px; border-radius: 20px; font-size: 0.8em; font-weight: bold; font-family: monospace; display: inline-block; margin-top: 8px; }
+
+        /* 佈局 Grid */
+        .container { display: grid; grid-template-columns: 350px 1fr; gap: 30px; }
+        @media (max-width: 800px) { .container { grid-template-columns: 1fr; } }
+
+        /* 卡片樣式 */
+        .card { background: var(--card); padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
+        .card h3 { margin-top: 0; color: #334155; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px; font-size: 1.1em; }
+
+        /* 表單元件 */
+        label { display: block; font-weight: 600; margin-bottom: 8px; color: #475569; font-size: 0.9em; }
+        select, textarea { width: 100%; padding: 12px; border: 2px solid #cbd5e1; border-radius: 8px; font-size: 14px; background: #fff; transition: 0.2s; box-sizing: border-box; }
+        select:focus, textarea:focus { border-color: var(--primary); outline: none; }
+        textarea { height: 200px; resize: vertical; font-family: monospace; }
         
-        /* 卡片風格 */
-        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
-        .card h3 { margin-top: 0; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; color: #334155; }
-        
-        /* 控制元件 */
-        label { display: block; font-weight: 600; margin-bottom: 5px; color: #475569; font-size: 0.9em; }
-        select, textarea, input { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; box-sizing: border-box; }
-        select { background-color: #f8fafc; }
-        textarea { height: 250px; font-family: monospace; resize: vertical; }
+        /* 選單群組樣式 */
+        optgroup { font-weight: bold; font-style: normal; color: #0f172a; }
 
         /* 按鈕群 */
-        .btn-group { display: flex; gap: 10px; }
-        button { flex: 1; padding: 12px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s; }
-        .btn-start { background: #2563eb; color: white; } .btn-start:hover { background: #1d4ed8; }
-        .btn-stop { background: #ef4444; color: white; } .btn-stop:hover { background: #dc2626; }
-        .btn-csv { background: #10b981; color: white; } .btn-csv:hover { background: #059669; }
-        button:disabled { background: #e2e8f0; color: #94a3b8; cursor: not-allowed; }
+        .btn-group { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+        button { padding: 14px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; color: white; transition: 0.2s; font-size: 14px; }
+        .btn-start { background: var(--primary); } .btn-start:hover { background: #1d4ed8; }
+        .btn-stop { background: var(--danger); } .btn-stop:hover { background: #dc2626; }
+        .btn-csv { background: var(--success); } .btn-csv:hover { background: #059669; }
+        button:disabled { background: #cbd5e1; cursor: not-allowed; opacity: 0.7; }
 
         /* 進度條 */
-        .progress-container { height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden; margin: 10px 0; }
-        .progress-bar { height: 100%; background: #2563eb; width: 0%; transition: width 0.3s; }
-        
-        /* 數據表格 */
-        .table-wrap { height: 700px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; }
+        .progress-box { margin: 15px 0; }
+        .progress-bg { background: #e2e8f0; height: 8px; border-radius: 4px; overflow: hidden; }
+        .progress-bar { height: 100%; background: var(--primary); width: 0%; transition: width 0.3s; }
+        .progress-text { text-align: right; font-size: 12px; color: #64748b; margin-top: 4px; }
+
+        /* 結果表格 */
+        .table-container { height: 600px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; }
         table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        th { background: #f8fafc; padding: 12px; text-align: left; position: sticky; top: 0; border-bottom: 2px solid #e2e8f0; color: #475569; }
-        td { padding: 10px; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
+        th { background: #f8fafc; padding: 12px; text-align: left; position: sticky; top: 0; border-bottom: 2px solid #e2e8f0; color: #475569; z-index: 10; }
+        td { padding: 12px; border-bottom: 1px solid #f1f5f9; vertical-align: top; line-height: 1.5; }
         
-        /* 標籤 */
-        .tag { padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: bold; }
-        .tag-gray { background: #f1f5f9; color: #64748b; }
-        .tag-green { background: #dcfce7; color: #166534; }
-        .tag-blue { background: #dbeafe; color: #1e40af; }
-        .tag-red { background: #fee2e2; color: #991b1b; }
+        /* 狀態標籤 */
+        .tag { padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
+        .tag-ok { background: #dcfce7; color: #166534; }
+        .tag-err { background: #fee2e2; color: #991b1b; }
+        .tag-wait { background: #f1f5f9; color: #64748b; }
 
     </style>
 </head>
 <body>
 
 <header>
-    <h1>🧪 2026 LLM 幻覺量化評測實驗室</h1>
-    <div class="subtitle">針對 GPT-4/5 世代差異與參數量級之實證研究 (Empirical Study on GPT Generations & Scale)</div>
+    <h1>🧪 2026 GPT 幻覺量化評測實驗室</h1>
+    <div class="badge">SYSTEM V6.0 - OPENAI RESEARCH EDITION</div>
 </header>
 
-<div class="grid">
+<div class="container">
     <div class="card">
-        <h3>🎛️ 變因控制 (Variables)</h3>
+        <h3>🎛️ 實驗變因設定 (Variables)</h3>
         
         <label>1. 模型變因 (Independent Variable: Model)</label>
         <select id="modelSelect">
-            <optgroup label="RQ1: 世代演化 (GPT-4 vs GPT-5)">
-                <option value="gpt-4o">GPT-4o (2024 Flagship)</option>
+            <optgroup label="RQ1: 世代演化 (Gen Gap)">
+                <option value="gpt-4o">GPT-4o (2024 Baseline)</option>
                 <option value="gpt-5.2">GPT-5.2 (2026 Flagship)</option>
             </optgroup>
-            <optgroup label="RQ2: 參數量級 (Size/Compression)">
+            
+            <optgroup label="RQ2: 參數量級 (Parameter Scale)">
                 <option value="gpt-4o-mini">GPT-4o Mini (Small)</option>
                 <option value="gpt-5-nano">GPT-5 Nano (Tiny/Edge)</option>
             </optgroup>
+
             <optgroup label="RQ3: 推理思考 (Reasoning)">
-                <option value="o1">o1 (Slow Thinking)</option>
+                <option value="o1">o1 (Deep Research)</option>
                 <option value="o3">o3 (Advanced Reasoning)</option>
             </optgroup>
-            <optgroup label="備用對照 (Reference)">
-                <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
-                <option value="llama-3.1-70b-versatile">Llama 3.1 70B</option>
-            </optgroup>
         </select>
 
-        <label>2. 提示策略 (Independent Variable: Prompt)</label>
+        <label>2. 提示策略 (Prompt Strategy)</label>
         <select id="strategySelect">
             <option value="baseline">基準模式 (Zero-shot Baseline)</option>
-            <option value="persona">角色扮演 (Role-play: 台灣專家)</option>
-            <option value="cot">思維鏈 (Chain-of-Thought)</option>
+            <option value="persona">角色扮演 (Persona: 台灣專家)</option>
+            <option value="cot">思維鏈 (Chain of Thought)</option>
         </select>
 
-        <label>3. 測試題庫 (Input Data)</label>
-        <textarea id="questionList" placeholder="請貼上測試題目 (一行一題)..."></textarea>
+        <label>3. 測試題庫 (Questions)</label>
+        <textarea id="questionList" placeholder="在此貼上題目 (一行一題)..."></textarea>
         
-        <div class="progress-container"><div class="progress-bar" id="progressBar"></div></div>
-        <div style="text-align: right; font-size: 12px; color:#64748b;" id="progressText">Ready</div>
+        <div class="progress-box">
+            <div class="progress-bg"><div class="progress-bar" id="progressBar"></div></div>
+            <div class="progress-text" id="progressText">Ready (0/0)</div>
+        </div>
 
         <div class="btn-group">
-            <button class="btn-start" onclick="startExp()" id="btnStart">▶ 執行實驗</button>
-            <button class="btn-stop" onclick="stopExp()" id="btnStop" disabled>⏹ 停止</button>
-            <button class="btn-csv" onclick="downloadCSV()" id="btnCsv" disabled>📥 下載數據</button>
+            <button class="btn-start" onclick="startExp()" id="btnStart">▶ 執行實驗 (Start)</button>
+            <button class="btn-stop" onclick="stopExp()" id="btnStop" disabled>⏹ 強制停止 (Stop)</button>
+            <button class="btn-csv" onclick="downloadCSV()" id="btnCsv" disabled>📥 下載數據 (Export CSV)</button>
         </div>
     </div>
 
     <div class="card">
-        <h3>📊 實時數據 (Real-time Metrics)</h3>
-        <div class="table-wrap">
+        <h3>📊 實時數據監控 (Real-time Data)</h3>
+        <div class="table-container">
             <table id="resTable">
                 <thead>
                     <tr>
-                        <th width="5%">ID</th>
-                        <th width="30%">題目 (Prompt)</th>
-                        <th width="40%">回應 (Response)</th>
-                        <th width="10%">字數 (Len)</th>
-                        <th width="10%">延遲 (ms)</th>
-                        <th width="5%">狀態</th>
+                        <th width="5%">#</th>
+                        <th width="25%">題目 (Prompt)</th>
+                        <th width="45%">AI 回應 (Output)</th>
+                        <th width="10%">字數</th>
+                        <th width="15%">狀態</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr><td colspan="6" style="text-align:center; padding:20px; color:#94a3b8;">等待實驗啟動...</td></tr>
+                    <tr><td colspan="5" style="text-align:center; padding:40px; color:#94a3b8;">請輸入題目並開始實驗...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -124,114 +133,136 @@
 
 <script>
     let isRunning = false;
-    let dataLog = [];
-    
+    let resultsLog = [];
+
     async function startExp() {
-        const qRaw = document.getElementById('questionList').value.trim();
-        if(!qRaw) { alert("請輸入題目！"); return; }
+        const qInput = document.getElementById('questionList').value.trim();
+        if(!qInput) { alert("請先輸入測試題目！"); return; }
         
-        const questions = qRaw.split('\n').filter(x=>x.trim());
+        const questions = qInput.split('\n').filter(line => line.trim() !== '');
         const model = document.getElementById('modelSelect').value;
         const strategy = document.getElementById('strategySelect').value;
         
+        // 初始化狀態
         isRunning = true;
-        dataLog = [];
-        toggleUI(true);
-        document.querySelector('#resTable tbody').innerHTML = '';
+        resultsLog = [];
+        updateUI(true);
+        document.querySelector('#resTable tbody').innerHTML = ''; // 清空表格
 
-        for(let i=0; i<questions.length; i++) {
+        for(let i=0; i < questions.length; i++) {
             if(!isRunning) break;
-            
+
             const q = questions[i];
             updateProgress(i+1, questions.length);
-            
-            // 建立 Prompt
-            let finalPrompt = q;
-            if(strategy === 'persona') finalPrompt = `你是一位精通台灣歷史與文化的專家，請回答：${q}`;
-            if(strategy === 'cot') finalPrompt = `問題：${q}\n請一步步思考後回答 (Chain of Thought):`;
 
-            // UI 新增一行
+            // 1. 根據策略組裝 Prompt
+            let finalPrompt = q;
+            if(strategy === 'persona') finalPrompt = `你是一位精通繁體中文與台灣文化的學術專家。請回答以下問題：${q}`;
+            if(strategy === 'cot') finalPrompt = `問題：${q}\n請運用逐步思考 (Chain of Thought) 的方式分析並回答：`;
+
+            // 2. UI 顯示「處理中」
             const tr = document.createElement('tr');
-            tr.innerHTML = `<td>${i+1}</td><td>${q}</td><td style="color:#aaa;">生成中...</td><td>-</td><td>-</td><td><span class="tag tag-gray">...</span></td>`;
+            tr.innerHTML = `<td>${i+1}</td><td>${q}</td><td style="color:#64748b">處理中 (Generating)...</td><td>-</td><td><span class="tag tag-wait">...</span></td>`;
             document.querySelector('#resTable tbody').appendChild(tr);
             scrollToBottom();
 
-            // 呼叫 API
+            // 3. 呼叫後端 API
             const startTime = Date.now();
-            let rowData = { id: i+1, model, strategy, prompt: q, response: "", len: 0, latency: 0, status: "Fail" };
+            let record = { id: i+1, model, strategy, question: q, answer: "", length: 0, latency: 0, status: "Fail" };
 
             try {
-                const res = await fetch('/api/generate', {
+                const response = await fetch('/api/generate', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ prompt: finalPrompt, model: model })
                 });
-                const json = await res.json();
-                
-                if(json.error) throw new Error(json.error);
 
-                rowData.response = json.output;
-                rowData.latency = json.latency;
-                rowData.len = json.output.length; // 量化數據：字數
-                rowData.status = "Success";
+                const data = await response.json();
+
+                if(data.error) throw new Error(data.error);
+
+                // 成功取得數據
+                record.answer = data.output;
+                record.length = data.length;
+                record.latency = data.latency;
+                record.status = "Success";
 
                 // 更新 UI
                 tr.innerHTML = `
                     <td>${i+1}</td>
                     <td>${q}</td>
-                    <td><div style="max-height:80px; overflow:hidden; text-overflow:ellipsis;">${json.output}</div></td>
-                    <td>${rowData.len}</td>
-                    <td>${rowData.latency}</td>
-                    <td><span class="tag tag-green">OK</span></td>
+                    <td><div style="max-height:100px; overflow-y:auto; font-size:0.9em;">${data.output}</div></td>
+                    <td>${data.length}</td>
+                    <td><span class="tag tag-ok">${data.latency}ms</span></td>
                 `;
 
-            } catch(e) {
-                rowData.response = `Error: ${e.message}`;
-                tr.innerHTML = `<td>${i+1}</td><td>${q}</td><td style="color:red;">${e.message}</td><td>-</td><td>-</td><td><span class="tag tag-red">ERR</span></td>`;
+            } catch (err) {
+                console.error(err);
+                record.answer = `[Error] ${err.message}`;
+                tr.innerHTML = `
+                    <td>${i+1}</td>
+                    <td>${q}</td>
+                    <td style="color:var(--danger)">${err.message}</td>
+                    <td>0</td>
+                    <td><span class="tag tag-err">ERR</span></td>
+                `;
             }
+
+            resultsLog.push(record);
             
-            dataLog.push(rowData);
-            if(i < questions.length-1) await new Promise(r => setTimeout(r, 1500)); // 避免 API Rate Limit
+            // 4. 速率限制保護 (Rate Limit Protection)
+            // 避免 API 呼叫太快被封鎖，每題中間休息 1.5 秒
+            if(i < questions.length - 1) await new Promise(r => setTimeout(r, 1500));
         }
-        
+
         isRunning = false;
-        toggleUI(false);
-        if(confirm("實驗完成！是否立即下載 CSV 進行分析？")) downloadCSV();
+        updateUI(false);
+        if(confirm(`實驗結束！共完成 ${resultsLog.length} 筆數據。\n是否立即下載 CSV 檔案？`)) {
+            downloadCSV();
+        }
     }
 
     function stopExp() { isRunning = false; }
 
     function downloadCSV() {
-        // 製作符合期刊分析需求的 CSV (包含人工標記欄位)
-        let csv = "\uFEFFID,Model,Strategy,Prompt,Response,Length_Chars,Latency_ms,Error_Type_Label(Manual)\n";
-        dataLog.forEach(row => {
-            const safeRes = row.response.replace(/"/g, '""').replace(/\n/g, ' ');
-            const safePrompt = row.prompt.replace(/"/g, '""');
-            csv += `${row.id},${row.model},${row.strategy},"${safePrompt}","${safeRes}",${row.len},${row.latency},\n`;
+        if(resultsLog.length === 0) return;
+
+        // 建立符合期刊分析需求的 CSV 表頭
+        // 特別預留 "Hallucination_Type" 欄位供人工標記
+        let csvContent = "\uFEFFID,Model,Strategy,Question,Answer,Length_Chars,Latency_ms,Hallucination_Type(A/B/D)\n";
+
+        resultsLog.forEach(row => {
+            // 處理 CSV 格式 (換行符號與引號轉義)
+            const safeQ = row.question.replace(/"/g, '""');
+            const safeA = row.answer.replace(/"/g, '""').replace(/\n/g, ' '); // 將換行轉為空白，保持表格整齊
+            
+            csvContent += `${row.id},${row.model},${row.strategy},"${safeQ}","${safeA}",${row.length},${row.latency},\n`;
         });
-        
-        const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = `Experiment_${document.getElementById('modelSelect').value}_${Date.now()}.csv`;
+        link.href = url;
+        const timestamp = new Date().toISOString().slice(0,19).replace(/:/g,"-");
+        link.download = `Exp_${document.getElementById('modelSelect').value}_${timestamp}.csv`;
         link.click();
     }
 
-    function toggleUI(disabled) {
-        document.getElementById('btnStart').disabled = disabled;
-        document.getElementById('btnCsv').disabled = disabled;
-        document.getElementById('btnStop').disabled = !disabled;
+    function updateUI(isBusy) {
+        document.getElementById('btnStart').disabled = isBusy;
+        document.getElementById('btnCsv').disabled = isBusy;
+        document.getElementById('btnStop').disabled = !isBusy;
     }
-    
-    function updateProgress(curr, total) {
-        const pct = (curr/total)*100;
-        document.getElementById('progressBar').style.width = pct + "%";
-        document.getElementById('progressText').innerText = `${curr} / ${total}`;
+
+    function updateProgress(current, total) {
+        const percent = (current / total) * 100;
+        document.getElementById('progressBar').style.width = percent + "%";
+        document.getElementById('progressText').innerText = `Progress: ${current} / ${total}`;
     }
-    
+
     function scrollToBottom() {
-        const div = document.querySelector('.table-wrap');
-        div.scrollTop = div.scrollHeight;
+        const container = document.querySelector('.table-container');
+        container.scrollTop = container.scrollHeight;
     }
 </script>
 
