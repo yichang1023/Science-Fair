@@ -3,48 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🧪 GPT-5 Hallucination Lab (V7.0 - Eval Ready)</title>
+    <title>🧪 GPT-5 Hallucination Lab (V7.1 - Full Metrics)</title>
     <style>
-        /* V7.0 樣式升級 */
+        /* V7.1 樣式：優化表格寬度配置 */
         :root { --primary: #2563eb; --danger: #ef4444; --success: #10b981; --bg: #f8fafc; --card: #ffffff; --warn: #f59e0b; }
         body { font-family: "Segoe UI", "Microsoft JhengHei", sans-serif; background: var(--bg); color: #1e293b; padding: 20px; max-width: 1400px; margin: 0 auto; }
         
         header { text-align: center; padding-bottom: 20px; border-bottom: 2px solid #e2e8f0; margin-bottom: 30px; }
         h1 { margin: 0; font-size: 2em; font-weight: 800; color: #0f172a; }
-        .badge { background: #0f172a; color: #06b6d4; padding: 5px 12px; border-radius: 20px; font-size: 0.8em; font-weight: bold; font-family: monospace; display: inline-block; margin-top: 8px; }
+        .badge { background: #0f172a; color: #a5f3fc; padding: 5px 12px; border-radius: 20px; font-size: 0.8em; font-weight: bold; font-family: monospace; display: inline-block; margin-top: 8px; }
 
-        .container { display: grid; grid-template-columns: 350px 1fr; gap: 30px; }
-        @media (max-width: 900px) { .container { grid-template-columns: 1fr; } }
+        .container { display: grid; grid-template-columns: 320px 1fr; gap: 20px; } /* 左側稍微縮窄，給右側表格更多空間 */
+        @media (max-width: 1000px) { .container { grid-template-columns: 1fr; } }
 
-        .card { background: var(--card); padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
+        .card { background: var(--card); padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
         .card h3 { margin-top: 0; color: #334155; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px; font-size: 1.1em; }
 
-        label { display: block; font-weight: 600; margin-bottom: 8px; color: #475569; font-size: 0.9em; }
-        select, textarea, input[type="range"] { width: 100%; padding: 12px; border: 2px solid #cbd5e1; border-radius: 8px; font-size: 14px; background: #fff; box-sizing: border-box; }
-        textarea { height: 150px; resize: vertical; font-family: monospace; }
+        label { display: block; font-weight: 600; margin-bottom: 6px; color: #475569; font-size: 0.9em; }
+        select, textarea, input[type="range"] { width: 100%; padding: 10px; border: 2px solid #cbd5e1; border-radius: 8px; font-size: 14px; background: #fff; box-sizing: border-box; }
+        textarea { height: 120px; resize: vertical; font-family: monospace; }
         
-        /* 滑桿樣式 */
-        .range-wrap { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
-        .range-val { font-weight: bold; color: var(--primary); min-width: 40px; }
+        .range-wrap { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; }
+        .range-val { font-weight: bold; color: var(--primary); min-width: 30px; }
 
         optgroup { font-weight: bold; color: #0f172a; }
 
-        .btn-group { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
-        button { padding: 14px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; color: white; transition: 0.2s; font-size: 14px; }
+        .btn-group { display: flex; flex-direction: column; gap: 8px; margin-top: 15px; }
+        button { padding: 12px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; color: white; transition: 0.2s; font-size: 14px; }
         .btn-start { background: var(--primary); } .btn-start:hover { background: #1d4ed8; }
         .btn-stop { background: var(--danger); } .btn-stop:hover { background: #dc2626; }
         .btn-csv { background: var(--success); } .btn-csv:hover { background: #059669; }
         button:disabled { background: #cbd5e1; cursor: not-allowed; opacity: 0.7; }
 
-        /* 結果表格升級 */
-        .table-container { height: 600px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; }
-        table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        th { background: #f8fafc; padding: 12px; text-align: left; position: sticky; top: 0; border-bottom: 2px solid #e2e8f0; color: #475569; z-index: 10; }
-        td { padding: 12px; border-bottom: 1px solid #f1f5f9; vertical-align: top; line-height: 1.5; }
+        /* 結果表格 */
+        .table-container { height: 650px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed; } /* 固定佈局防止跑版 */
+        th { background: #f8fafc; padding: 10px; text-align: left; position: sticky; top: 0; border-bottom: 2px solid #e2e8f0; color: #475569; z-index: 10; white-space: nowrap; }
+        td { padding: 10px; border-bottom: 1px solid #f1f5f9; vertical-align: top; line-height: 1.4; word-wrap: break-word; }
         
-        /* 評分按鈕群 */
-        .eval-btns { display: flex; gap: 5px; flex-wrap: wrap; }
-        .eval-btn { padding: 4px 8px; font-size: 11px; border-radius: 4px; border: 1px solid #cbd5e1; background: white; color: #64748b; cursor: pointer; }
+        /* 狀態標籤 */
+        .tag { padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; display: inline-block; }
+        .tag-ok { background: #dcfce7; color: #166534; }
+        .tag-err { background: #fee2e2; color: #991b1b; }
+        .tag-wait { background: #f1f5f9; color: #64748b; }
+
+        /* 評分按鈕區 */
+        .eval-btns { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 5px; }
+        .eval-btn { padding: 4px 8px; font-size: 11px; border-radius: 4px; border: 1px solid #cbd5e1; background: white; color: #64748b; cursor: pointer; width: 48%; text-align: center; } 
         .eval-btn:hover { background: #f1f5f9; }
         .eval-btn.selected { color: white; border-color: transparent; }
         
@@ -53,22 +58,20 @@
         .eval-btn[data-type="A"].selected { background: var(--danger); }
         .eval-btn[data-type="B"].selected { background: var(--warn); }
         .eval-btn[data-type="D"].selected { background: #64748b; }
-
-        .tag-ok { background: #dcfce7; color: #166534; padding: 2px 6px; border-radius: 4px; font-size: 11px; }
     </style>
 </head>
 <body>
 
 <header>
     <h1>🧪 2026 GPT 幻覺量化評測實驗室</h1>
-    <div class="badge">SYSTEM V7.0 - HUMAN EVALUATION READY</div>
+    <div class="badge">SYSTEM V7.1 - FULL METRICS + EVALUATION</div>
 </header>
 
 <div class="container">
     <div class="card">
         <h3>🎛️ 變因控制 (Variables)</h3>
         
-        <label>1. 模型 (Model - IV1/IV2)</label>
+        <label>1. 模型 (Model)</label>
         <select id="modelSelect">
             <optgroup label="RQ1: 世代演化">
                 <option value="gpt-4o">GPT-4o (2024)</option>
@@ -78,27 +81,30 @@
                 <option value="gpt-4o-mini">GPT-4o Mini</option>
                 <option value="gpt-5-nano">GPT-5 Nano</option>
             </optgroup>
-            <optgroup label="RQ3: 推理">
+            <optgroup label="RQ3: 推理思考">
                 <option value="o3">o3 (Reasoning)</option>
             </optgroup>
         </select>
 
-        <label>2. 溫度 (Temperature - Control)</label>
+        <label>2. 溫度 (Temperature)</label>
         <div class="range-wrap">
             <input type="range" id="tempRange" min="0" max="1" step="0.1" value="0.7" oninput="document.getElementById('tempVal').innerText=this.value">
             <span class="range-val" id="tempVal">0.7</span>
         </div>
-        <small style="color:#64748b; display:block; margin-top:-10px; margin-bottom:15px;">0.0=事實/穩定, 1.0=創意/隨機</small>
+        <div style="font-size:11px; color:#64748b; margin-top:-10px; margin-bottom:15px; line-height:1.4;">
+            0.0 = 精確/保守 (適合知識題)<br>
+            1.0 = 創意/隨機 (易產生幻覺)
+        </div>
 
-        <label>3. 策略 (Prompt - IV3)</label>
+        <label>3. 策略 (Strategy)</label>
         <select id="strategySelect">
             <option value="baseline">基準模式 (Baseline)</option>
             <option value="persona">角色扮演 (Persona)</option>
             <option value="cot">思維鏈 (CoT)</option>
         </select>
 
-        <label>4. 題庫 (Input)</label>
-        <textarea id="questionList" placeholder="貼上題目..."></textarea>
+        <label>4. 題庫 (Questions)</label>
+        <textarea id="questionList" placeholder="請貼上題目 (一行一題)..."></textarea>
         
         <div style="background:#e2e8f0; height:6px; border-radius:3px; margin:15px 0;">
             <div id="progressBar" style="height:100%; width:0%; background:#2563eb; transition:0.3s;"></div>
@@ -106,25 +112,27 @@
 
         <div class="btn-group">
             <button class="btn-start" onclick="startExp()" id="btnStart">▶ 執行實驗</button>
-            <button class="btn-stop" onclick="stopExp()" id="btnStop" disabled>⏹ 停止</button>
-            <button class="btn-csv" onclick="downloadCSV()" id="btnCsv" disabled>📥 下載含標記數據 (CSV)</button>
+            <button class="btn-stop" onclick="stopExp()" id="btnStop" disabled>⏹ 強制停止</button>
+            <button class="btn-csv" onclick="downloadCSV()" id="btnCsv" disabled>📥 下載數據 (CSV)</button>
         </div>
     </div>
 
     <div class="card">
-        <h3>📊 評測與標記 (Evaluation)</h3>
+        <h3>📊 評測結果 (Results)</h3>
         <div class="table-container">
             <table id="resTable">
                 <thead>
                     <tr>
                         <th width="5%">#</th>
-                        <th width="25%">題目</th>
-                        <th width="40%">AI 回應</th>
-                        <th width="30%">人工標記 (Human Eval)</th>
+                        <th width="20%">題目</th>
+                        <th width="35%">AI 回應</th>
+                        <th width="8%">字數</th>
+                        <th width="12%">狀態/延遲</th>
+                        <th width="20%">人工標記</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr><td colspan="4" style="text-align:center; padding:40px; color:#94a3b8;">準備就緒</td></tr>
+                    <tr><td colspan="6" style="text-align:center; padding:40px; color:#94a3b8;">等待實驗啟動...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -155,50 +163,69 @@
             const q = questions[i];
             updateProgress(i+1, questions.length);
 
-            // 策略組合
+            // 1. Prompt 組合
             let finalPrompt = q;
-            if(strategy === 'persona') finalPrompt = `你是一位台灣學術專家，請回答：${q}`;
-            if(strategy === 'cot') finalPrompt = `問題：${q}\n請一步步思考 (Chain of Thought)：`;
+            if(strategy === 'persona') finalPrompt = `你是一位精通繁體中文與台灣文化的學術專家。請回答：${q}`;
+            if(strategy === 'cot') finalPrompt = `問題：${q}\n請運用逐步思考 (Chain of Thought) 的方式分析並回答：`;
 
-            // UI 佔位
+            // 2. UI 預先顯示
             const tr = document.createElement('tr');
-            tr.innerHTML = `<td>${i+1}</td><td>${q}</td><td style="color:#aaa">Generating...</td><td>-</td>`;
+            tr.innerHTML = `
+                <td>${i+1}</td>
+                <td><div style="max-height:80px; overflow:hidden;">${q}</div></td>
+                <td style="color:#aaa">Generating...</td>
+                <td>-</td>
+                <td><span class="tag tag-wait">...</span></td>
+                <td>-</td>
+            `;
             document.querySelector('#resTable tbody').appendChild(tr);
             scrollToBottom();
 
-            // API 呼叫 (目前後端尚未實作接收 temp，但前端先傳送，未來擴充容易)
+            // 3. 呼叫 API
             const startT = Date.now();
-            let rowData = { id: i+1, model, strategy, temp, q, a: "", type: "Unlabeled", latency: 0 };
+            let rowData = { id: i+1, model, strategy, temp, q, a: "", len: 0, latency: 0, type: "Unlabeled" };
 
             try {
                 const res = await fetch('/api/generate', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ prompt: finalPrompt, model: model }) // 暫時不傳 temp，避免後端報錯，若後端有改可加
+                    body: JSON.stringify({ prompt: finalPrompt, model: model }) 
                 });
                 const json = await res.json();
                 
-                rowData.a = json.output || "Error";
+                if(json.error) throw new Error(json.error);
+
+                rowData.a = json.output;
+                rowData.len = json.length || json.output.length;
                 rowData.latency = json.latency;
 
-                // 更新 UI：加入「評分按鈕」
+                // 4. 更新 UI (包含所有欄位)
                 tr.innerHTML = `
                     <td>${i+1}</td>
-                    <td>${q}</td>
+                    <td><div style="max-height:80px; overflow-y:auto;">${q}</div></td>
                     <td><div style="max-height:120px; overflow-y:auto; font-size:0.9em;">${json.output}</div></td>
+                    <td>${rowData.len}</td>
+                    <td><span class="tag tag-ok">${rowData.latency}ms</span></td>
                     <td>
                         <div class="eval-btns" id="btns-${i}">
                             <button class="eval-btn" onclick="setLabel(${i}, 'OK', this)">✅ 正確</button>
-                            <button class="eval-btn" onclick="setLabel(${i}, 'A', this)">🤥 A:瞎掰</button>
-                            <button class="eval-btn" onclick="setLabel(${i}, 'B', this)">🔀 B:錯置</button>
-                            <button class="eval-btn" onclick="setLabel(${i}, 'D', this)">🤐 D:拒答</button>
+                            <button class="eval-btn" onclick="setLabel(${i}, 'A', this)">🤥 瞎掰</button>
+                            <button class="eval-btn" onclick="setLabel(${i}, 'B', this)">🔀 錯置</button>
+                            <button class="eval-btn" onclick="setLabel(${i}, 'D', this)">🤐 拒答</button>
                         </div>
                     </td>
                 `;
 
             } catch(e) {
                 rowData.a = "Error: " + e.message;
-                tr.innerHTML = `<td>${i+1}</td><td>${q}</td><td style="color:red">${e.message}</td><td>-</td>`;
+                tr.innerHTML = `
+                    <td>${i+1}</td>
+                    <td>${q}</td>
+                    <td style="color:red">${e.message}</td>
+                    <td>0</td>
+                    <td><span class="tag tag-err">ERR</span></td>
+                    <td>-</td>
+                `;
             }
             
             resultsLog.push(rowData);
@@ -209,12 +236,11 @@
         updateUI(false);
     }
 
-    // 標記功能：這是 V7.0 的核心
+    // 人工標記函式
     window.setLabel = function(index, type, btnElement) {
-        // 更新數據
+        if(!resultsLog[index]) return;
         resultsLog[index].type = type;
         
-        // 更新 UI 樣式
         const parent = document.getElementById(`btns-${index}`);
         const btns = parent.querySelectorAll('.eval-btn');
         btns.forEach(b => b.classList.remove('selected'));
@@ -224,19 +250,20 @@
     function stopExp() { isRunning = false; }
 
     function downloadCSV() {
-        // 匯出包含「人工標記」的 CSV
-        let csv = "\uFEFFID,Model,Strategy,Temperature,Question,Answer,Latency,Hallucination_Type\n";
+        if(resultsLog.length === 0) return;
+        // 匯出完整欄位 CSV
+        let csv = "\uFEFFID,Model,Strategy,Temperature,Question,Answer,Length_Chars,Latency_ms,Hallucination_Type\n";
         resultsLog.forEach(r => {
             const safeQ = r.q.replace(/"/g, '""');
             const safeA = r.a.replace(/"/g, '""').replace(/\n/g, ' ');
-            csv += `${r.id},${r.model},${r.strategy},${r.temp},"${safeQ}","${safeA}",${r.latency},${r.type}\n`;
+            csv += `${r.id},${r.model},${r.strategy},${r.temp},"${safeQ}","${safeA}",${r.len},${r.latency},${r.type}\n`;
         });
         
         const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
         const ts = new Date().toISOString().slice(0,19).replace(/[:T]/g,"-");
-        link.download = `Exp_V7_${ts}.csv`;
+        link.download = `Exp_V7.1_${ts}.csv`;
         link.click();
     }
 
