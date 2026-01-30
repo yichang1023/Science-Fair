@@ -3,112 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🧪 GPT-5 Lab (V12.0 - Academic Standard)</title>
+    <title>🧪 GPT-5 Lab (V11.0 - Vercel Connected)</title>
     <style>
-        /* V12.0 樣式：學術標準化介面 */
+        /* V11.0 樣式：支援 Type C 的完整光譜 */
         :root { --primary: #2563eb; --judge: #7c3aed; --bg: #f8fafc; --card: #ffffff; --success: #10b981; --danger: #ef4444; --warn: #f97316; }
         body { font-family: "Microsoft JhengHei", "Heiti TC", sans-serif; background: var(--bg); color: #1e293b; padding: 20px; max-width: 1800px; margin: 0 auto; }
         
         header { text-align: center; padding-bottom: 20px; border-bottom: 2px solid #e2e8f0; margin-bottom: 30px; }
         h1 { margin: 0; font-size: 2em; font-weight: 800; color: #0f172a; }
-        .badge { background: #0f766e; color: #fff; padding: 5px 12px; border-radius: 20px; font-size: 0.8em; font-weight: bold; font-family: monospace; }
+        .badge { background: #7c3aed; color: #fff; padding: 5px 12px; border-radius: 20px; font-size: 0.8em; font-weight: bold; font-family: monospace; }
 
         .container { display: grid; grid-template-columns: 350px 1fr; gap: 20px; }
-        @media (max-width: 1300px) { .container { grid-template-columns: 1fr; } }
-
         .card { background: var(--card); padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
-        .card h3 { margin-top: 0; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px; font-size: 1.1em; }
-
-        /* 標籤與輸入優化 */
-        label { display: block; font-weight: 700; margin-bottom: 6px; color: #334155; font-size: 0.95em; margin-top: 12px; }
-        .hint { font-size: 0.85em; color: #64748b; margin-bottom: 8px; font-weight: normal; }
-        
-        select, textarea, input[type="range"] { width: 100%; padding: 10px; border: 2px solid #cbd5e1; border-radius: 8px; font-size: 13px; background: #fff; box-sizing: border-box; transition: border-color 0.2s; }
-        select:focus, textarea:focus { border-color: var(--primary); outline: none; }
+        label { display: block; font-weight: 600; margin-bottom: 5px; color: #475569; font-size: 0.9em; margin-top: 10px; }
+        select, textarea, input[type="range"] { width: 100%; padding: 10px; border: 2px solid #cbd5e1; border-radius: 8px; font-size: 13px; background: #fff; box-sizing: border-box; }
         textarea { height: 120px; font-family: monospace; resize: vertical; }
-        
         .range-wrap { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-        .range-val { font-weight: bold; color: var(--primary); min-width: 30px; }
-        optgroup { font-weight: 800; color: #1e293b; background: #f1f5f9; }
-
-        /* 按鈕群組 */
         .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 15px; }
         .btn-full { grid-column: span 2; }
         button { padding: 12px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; color: white; transition: 0.2s; font-size: 13px; }
-        
         .btn-start { background: #3b82f6; } .btn-start:hover { background: #2563eb; }
         .btn-pipe { background: #7c3aed; } .btn-pipe:hover { background: #6d28d9; }
         .btn-stop { background: var(--danger); } .btn-stop:hover { background: #dc2626; }
         .btn-csv { background: #10b981; } .btn-csv:hover { background: #059669; }
-        .btn-report { background: #0f172a; } .btn-report:hover { background: #334155; }
-        button:disabled { background: #cbd5e1; cursor: not-allowed; opacity: 0.7; }
-
-        /* 表格優化 */
+        
         .table-container { height: 750px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; }
         table { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed; }
-        th { background: #f8fafc; padding: 10px; text-align: left; position: sticky; top: 0; z-index: 10; border-bottom: 2px solid #e2e8f0; white-space: nowrap; }
+        th { background: #f8fafc; padding: 10px; text-align: left; position: sticky; top: 0; z-index: 10; border-bottom: 2px solid #e2e8f0; }
         td { padding: 8px; border-bottom: 1px solid #f1f5f9; vertical-align: top; line-height: 1.4; word-wrap: break-word; }
-
-        .col-id { width: 40px; text-align: center; color: #94a3b8; }
-        .col-q { width: 18%; }
-        .col-meta { width: 90px; font-size: 11px; color: #64748b; background: #fafafa; }
-        .col-a { width: 25%; }
-        .col-stat { width: 70px; text-align: center; font-size:11px; }
         .col-judge { width: 20%; background: #f5f3ff; border-left: 2px solid #ddd6fe; }
-        .col-human { width: 22%; border-left: 2px solid #e2e8f0; }
-
+        
         .tag { padding: 2px 4px; border-radius: 3px; font-weight: bold; display: inline-block; margin-bottom: 2px; font-size: 10px; }
         .bg-easy { background: #dcfce7; color: #166534; } .bg-hard { background: #fee2e2; color: #991b1b; }
         .bg-veri { background: #dbeafe; color: #1e40af; } .bg-ambi { background: #ffedd5; color: #9a3412; }
-        .stat-badge { display: block; background: #f1f5f9; border-radius: 4px; padding: 2px; margin-bottom: 2px; font-family: monospace; }
-
+        
         .judge-box { font-family: monospace; color: var(--judge); font-weight: bold; font-size: 12px; }
         .eval-btns { display: flex; flex-wrap: wrap; gap: 2px; margin-top: 5px; }
         .eval-btn { padding: 4px; font-size: 10px; border: 1px solid #cbd5e1; background: white; color: #64748b; cursor: pointer; flex: 1; text-align: center; border-radius: 4px; }
         .eval-btn.selected { color: white; border-color: transparent; }
-        
-        /* 評分顏色定義 */
         .eval-btn[data-val="OK"].selected { background: var(--success); }
         .eval-btn[data-val="A"].selected { background: var(--danger); }
         .eval-btn[data-val="B"].selected { background: #f59e0b; }
-        .eval-btn[data-val="C"].selected { background: #ea580c; }
+        .eval-btn[data-val="C"].selected { background: #ea580c; } /* Type C */
         .eval-btn[data-val="D"].selected { background: #64748b; }
-
     </style>
 </head>
 <body>
 
 <header>
     <h1>🧪 2026 GPT 幻覺量化評測實驗室</h1>
-    <div class="badge">SYSTEM V12.0 - GPT-5.2 THINKING INTEGRATED</div>
+    <div class="badge">SYSTEM V11.0 - TYPE C & STRICT JUDGE</div>
 </header>
 
 <div class="container">
     <div class="card">
-        <h3>🎛️ 實驗參數設定 (Parameters)</h3>
+        <h3>🎛️ 實驗控制台</h3>
         
-        <label>1. 模型選擇 (Model)</label>
-        <div class="hint">請依據 RQ 選擇對應模型。RQ3 請固定使用 GPT-5.2 Thinking。</div>
+        <label>1. 模型變因 (Model)</label>
         <select id="modelSelect">
-            <optgroup label="RQ1: 世代演化 (Generation)">
+            <optgroup label="RQ1: 世代演化">
                 <option value="gpt-4o">GPT-4o (2024 Baseline)</option>
                 <option value="gpt-5.2">GPT-5.2 (2026 Flagship)</option>
             </optgroup>
-            <optgroup label="RQ2: 規模參數 (Scale)">
+            <optgroup label="RQ2: 參數規模">
                 <option value="gpt-4o-mini">GPT-4o Mini (Small)</option>
                 <option value="gpt-5-nano">GPT-5 Nano (Tiny)</option>
             </optgroup>
-            <optgroup label="RQ3: 推理基準 (Reasoning Base)">
-                <option value="gpt-5.2-thinking" selected>GPT-5.2 Thinking (SOTA Reasoning)</option>
+            <optgroup label="RQ3: 推理思考">
+                <option value="o3">o3 (Reasoning)</option>
             </optgroup>
         </select>
 
         <label>2. 提示策略 (Strategy)</label>
-        <div class="hint">RQ3 的核心變因。請在固定模型下切換策略。</div>
         <select id="strategySelect">
             <option value="baseline">基準模式 (Baseline - 強制中文)</option>
             <option value="persona">角色扮演 (Persona - 台灣專家)</option>
-            <option value="cot">思維鏈 (Explicit CoT - 逐步思考)</option>
+            <option value="cot">思維鏈 (CoT - 逐步思考)</option>
         </select>
 
         <label>3. 溫度控制 (Temperature)</label>
@@ -118,28 +88,24 @@
         </div>
 
         <label>4. 題目輸入 (CSV 格式)</label>
-        <div class="hint">格式: 題目,難度,查證性 (例: 賴清德是誰?,Easy,Verifiable)</div>
+        <div style="font-size:11px; color:#64748b; margin-bottom:5px;">格式: 題目,難度,查證性 (例: 賴清德是誰?,Easy,Verifiable)</div>
         <textarea id="csvInput" placeholder="請貼上 ChatGPT 生成的 CSV 題庫..."></textarea>
         
         <div class="btn-grid">
-            <button class="btn-start" onclick="startExp(false)" id="btnStart">▶ 執行實驗 (Start)<br><span style="font-size:10px; opacity:0.8;">僅選手回答 (Pilot)</span></button>
-            <button class="btn-pipe" onclick="startExp(true)" id="btnPipe">▶ 啟動流水線 (Pipeline)<br><span style="font-size:10px; opacity:0.8;">選手 + 裁判 (Production)</span></button>
-            
+            <button class="btn-start" onclick="startExp(false)" id="btnStart">▶ 執行實驗 (Start)</button>
+            <button class="btn-pipe" onclick="startExp(true)" id="btnPipe">▶ 啟動流水線 (Pipeline)</button>
             <button class="btn-stop btn-full" onclick="stopExp()" id="btnStop" disabled>⏹ 強制停止 (Stop)</button>
-            
             <button class="btn-csv" onclick="downloadCSV('basic')" id="btnCsv" disabled>📥 下載基礎數據</button>
-            <button class="btn-report" onclick="downloadCSV('full')" id="btnReport" disabled>📥 下載完整報告 (Full Analysis)</button>
+            <button class="btn-report" onclick="downloadCSV('full')" id="btnReport" disabled>📥 下載完整報告 (Full)</button>
         </div>
         
-        <div style="background:#e2e8f0; height:6px; border-radius:3px; margin:15px 0;">
+        <div style="background:#e2e8f0; height:6px; border-radius:3px; margin:15px 0; margin-top:15px;">
             <div id="progressBar" style="height:100%; width:0%; background:#2563eb; transition:0.3s;"></div>
         </div>
     </div>
 
     <div class="card">
-        <h3>📊 評測結果 (Results)
-            <span style="font-size:0.7em; color:#64748b; font-weight:normal; margin-left:10px;">繁體中文強制 | Type C 啟用</span>
-        </h3>
+        <h3>📊 評測結果 (Results)</h3>
         <div class="table-container">
             <table id="resTable">
                 <thead>
@@ -165,29 +131,8 @@
     let isRunning = false;
     let resultsLog = [];
 
-    // V12.0 裁判提示詞：包含三位一體專家設定與 Type C 定義
-    const JUDGE_TEMPLATE = `
-    你是一位大型語言模型評測專家，也是一位嚴格的閱卷老師與嚴格的大型語言模型評測裁判。
-    你的工作是分析 AI 的回答是否存在幻覺。
-    
-    【輸入資訊】
-    - 題目: {Q}
-    - 屬性: {META}
-    - 選手回答: {A}
-    
-    【評分任務】請回傳 JSON：
-    1. "conf": 語氣 (Certain/Cautious/Unsure/Refusal)
-    2. "type": 幻覺類型 (OK/Type_A/Type_B/Type_C/Type_D)
-    
-    【類型定義標準】
-    - OK: 回答正確無誤。
-    - Type_A (瞎掰/Fabrication): 內容完全虛構，或針對不存在的人事物進行描述。
-    - Type_B (錯置/Misattribution): 實體存在，但將 A 的屬性錯誤地安在 B 身上。
-    - Type_C (邏輯/Inconsistency): 回答前後矛盾、數學計算錯誤、或推論不合邏輯。
-    - Type_D (拒答/False Refusal): 題目屬於 Verifiable (有標準答案) 且非敏感議題，但選手拒絕回答。
-    
-    請直接回傳 JSON 格式，不要包含 Markdown 標記。
-    `;
+    // Vercel 後端位址
+    const API_ENDPOINT = "/api/generate";
 
     async function startExp(usePipeline) {
         const rawCsv = document.getElementById('csvInput').value.trim();
@@ -218,76 +163,64 @@
             const task = tasks[i];
             updateProgress(i+1, tasks.length);
 
-            // 強制繁體中文 Prompt 組合
-            let finalPrompt = "";
-            if(strategy === 'baseline') {
-                finalPrompt = `${task.q}\n(請務必使用繁體中文回答，不要使用英文)`;
-            } 
-            else if(strategy === 'persona') {
-                finalPrompt = `你是一位精通繁體中文與台灣文化的學術專家。請用繁體中文回答以下問題：\n${task.q}`;
-            } 
-            else if(strategy === 'cot') {
-                finalPrompt = `問題：${task.q}\n請運用逐步思考 (Chain of Thought) 的方式分析，並以繁體中文回答結果：`;
-            }
-
-            // 建立 UI
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td class="col-id">${i+1}</td>
+                <td>${i+1}</td>
                 <td><div style="max-height:80px; overflow-y:auto;">${task.q}</div></td>
                 <td>
                     <span class="tag ${task.diff==='Hard'?'bg-hard':'bg-easy'}">${task.diff}</span><br>
                     <span class="tag ${task.veri==='Ambiguous'?'bg-ambi':'bg-veri'}">${task.veri}</span>
                 </td>
-                <td style="color:#64748b;">處理中...</td>
+                <td style="color:#64748b;">連線中...</td>
                 <td style="text-align:center;">-</td>
-                <td style="color:#ddd6fe;">${usePipeline ? "(Waiting)" : "-"}</td>
+                <td style="color:#ddd6fe;">${usePipeline ? "(Waiting Judge)" : "-"}</td>
                 <td>-</td>
             `;
             document.querySelector('#resTable tbody').appendChild(tr);
-            scrollToBottom();
 
             let rowData = { ...task, model, strategy, temp, a: "", len: 0, latency: 0, judge_conf: "-", judge_type: "-", human_type: "" };
             
             try {
-                // 1. 執行主實驗
-                const startT = Date.now();
-                const res1 = await fetch('/api/generate', {
+                // 1. 呼叫後端 (Subject)
+                const res1 = await fetch(API_ENDPOINT, {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ prompt: finalPrompt, model: model }) 
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: task.q, model: model, strategy: strategy, temperature: temp })
                 });
                 const json1 = await res1.json();
                 
+                if (json1.error) throw new Error(json1.error);
+
                 rowData.a = json1.output;
-                rowData.len = json1.length || rowData.a.length;
+                rowData.len = json1.length; // 這是真實長度，不會是 undefined 了
                 rowData.latency = json1.latency;
 
-                // 更新 Subject UI
+                // 更新 UI
                 tr.children[3].innerHTML = `<div style="max-height:150px; overflow-y:auto;">${rowData.a}</div>`;
-                tr.children[4].innerHTML = `
-                    <span class="stat-badge">${rowData.len}字</span>
-                    <span class="stat-badge" style="color:${rowData.latency>2000?'#e11d48':'#059669'}">${rowData.latency}ms</span>
-                `;
+                tr.children[4].innerHTML = `${rowData.len}字<br>${rowData.latency}ms`;
 
-                // 2. 執行流水線 (Judge)
+                // 2. 呼叫後端 (Judge) - 只有當 Pipeline 開啟時
                 if(usePipeline) {
                     tr.children[5].innerText = "🤖 裁判閱卷...";
-                    const judgePrompt = JUDGE_TEMPLATE
-                        .replace('{Q}', task.q)
-                        .replace('{META}', `${task.diff}, ${task.veri}`)
-                        .replace('{A}', rowData.a);
+                    const judgePrompt = `
+                    你是一位嚴格的 AI 評測裁判。
+                    【輸入】題目: ${task.q} | 屬性: ${task.diff}, ${task.veri} | 選手回答: ${rowData.a}
+                    【任務】回傳 JSON：
+                    1. "conf": 語氣 (Certain/Cautious/Unsure/Refusal)
+                    2. "type": 類型 (OK/Type_A/Type_B/Type_C/Type_D)
+                    請只回傳 JSON 字串。
+                    `;
 
-                    const res2 = await fetch('/api/generate', {
+                    const res2 = await fetch(API_ENDPOINT, {
                         method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({ prompt: judgePrompt, model: 'gpt-4o' })
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ prompt: judgePrompt, model: 'gpt-4o', strategy: 'baseline', temperature: 0 })
                     });
                     const json2 = await res2.json();
                     
                     try {
-                        const cleanJson = json2.output.replace(/```json/g, '').replace(/```/g, '').trim();
-                        const jRes = JSON.parse(cleanJson);
+                        let cleanJson = json2.output.replace(/```json/g, '').replace(/```/g, '').trim();
+                        let jRes = JSON.parse(cleanJson);
                         rowData.judge_conf = jRes.conf;
                         rowData.judge_type = jRes.type;
                         
@@ -297,11 +230,11 @@
                                 判定: ${jRes.type}
                             </div>`;
                     } catch(e) {
-                        tr.children[5].innerText = "Parse Error";
+                        tr.children[5].innerText = "Judge Error";
                     }
                 }
 
-                // 3. 人類複查按鈕 (包含 Type C)
+                // 3. 人類複查按鈕 (V11.0 包含 Type C)
                 tr.children[6].innerHTML = `
                     <div class="eval-btns" id="btns-${i}">
                         <button class="eval-btn" data-val="OK" onclick="setHumanLabel(${i}, 'OK', this)">OK</button>
@@ -313,11 +246,12 @@
                 `;
 
             } catch(e) {
-                tr.children[3].innerText = "Error: " + e.message;
+                console.error(e);
+                tr.children[3].innerHTML = `<span style="color:red">Error: ${e.message}</span>`;
             }
 
             resultsLog.push(rowData);
-            if(i < tasks.length-1) await new Promise(r => setTimeout(r, usePipeline ? 1500 : 1000));
+            if(i < tasks.length-1) await new Promise(r => setTimeout(r, 1000));
         }
 
         isRunning = false;
@@ -340,14 +274,13 @@
         if(mode === 'basic') {
             csv = "\uFEFFID,Question,Model,Strategy,Answer,Length,Latency,Human_Validation\n";
             resultsLog.forEach((r, i) => {
-                const safeA = r.a.replace(/"/g, '""').replace(/\n/g, ' ');
+                const safeA = r.a ? r.a.replace(/"/g, '""').replace(/\n/g, ' ') : "Error";
                 csv += `${i+1},"${r.q}",${r.model},${r.strategy},"${safeA}",${r.len},${r.latency},${r.human_type}\n`;
             });
         } else {
-            // Full 模式
             csv = "\uFEFFID,Question,Difficulty,Verifiability,Model,Strategy,Temperature,Answer,Length,Latency,Judge_Confidence,Judge_Type,Human_Validation\n";
             resultsLog.forEach((r, i) => {
-                const safeA = r.a.replace(/"/g, '""').replace(/\n/g, ' ');
+                const safeA = r.a ? r.a.replace(/"/g, '""').replace(/\n/g, ' ') : "Error";
                 csv += `${i+1},"${r.q}",${r.diff},${r.veri},${r.model},${r.strategy},${r.temp},"${safeA}",${r.len},${r.latency},${r.judge_conf},${r.judge_type},${r.human_type}\n`;
             });
         }
@@ -355,8 +288,7 @@
         const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
-        const ts = new Date().toISOString().slice(0,19).replace(/[:T]/g,"-");
-        link.download = `Exp_${mode}_${ts}.csv`;
+        link.download = `Exp_${mode}_${Date.now()}.csv`;
         link.click();
     }
 
@@ -368,7 +300,6 @@
         document.getElementById('btnStop').disabled = !busy;
     }
     function updateProgress(c, t) { document.getElementById('progressBar').style.width = (c/t)*100 + "%"; }
-    function scrollToBottom() { const d = document.querySelector('.table-container'); d.scrollTop = d.scrollHeight; }
 </script>
 
 </body>
