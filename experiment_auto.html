@@ -3,24 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🧪 GPT-5 Hallucination Lab (V7.1 - Full Metrics)</title>
+    <title>🧪 GPT-5 Hallucination Lab (V7.2 - Academic Edition)</title>
     <style>
-        /* V7.1 樣式：優化表格寬度配置 */
+        /* V7.2 樣式：優化標記區佈局 */
         :root { --primary: #2563eb; --danger: #ef4444; --success: #10b981; --bg: #f8fafc; --card: #ffffff; --warn: #f59e0b; }
         body { font-family: "Segoe UI", "Microsoft JhengHei", sans-serif; background: var(--bg); color: #1e293b; padding: 20px; max-width: 1400px; margin: 0 auto; }
         
         header { text-align: center; padding-bottom: 20px; border-bottom: 2px solid #e2e8f0; margin-bottom: 30px; }
         h1 { margin: 0; font-size: 2em; font-weight: 800; color: #0f172a; }
-        .badge { background: #0f172a; color: #a5f3fc; padding: 5px 12px; border-radius: 20px; font-size: 0.8em; font-weight: bold; font-family: monospace; display: inline-block; margin-top: 8px; }
+        .badge { background: #0f172a; color: #f472b6; padding: 5px 12px; border-radius: 20px; font-size: 0.8em; font-weight: bold; font-family: monospace; display: inline-block; margin-top: 8px; }
 
-        .container { display: grid; grid-template-columns: 320px 1fr; gap: 20px; } /* 左側稍微縮窄，給右側表格更多空間 */
-        @media (max-width: 1000px) { .container { grid-template-columns: 1fr; } }
+        .container { display: grid; grid-template-columns: 320px 1fr; gap: 20px; }
+        @media (max-width: 1100px) { .container { grid-template-columns: 1fr; } }
 
         .card { background: var(--card); padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
         .card h3 { margin-top: 0; color: #334155; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px; font-size: 1.1em; }
 
         label { display: block; font-weight: 600; margin-bottom: 6px; color: #475569; font-size: 0.9em; }
-        select, textarea, input[type="range"] { width: 100%; padding: 10px; border: 2px solid #cbd5e1; border-radius: 8px; font-size: 14px; background: #fff; box-sizing: border-box; }
+        select, textarea, input[type="range"] { width: 100%; padding: 10px; border: 2px solid #cbd5e1; border-radius: 8px; font-size: 13px; background: #fff; box-sizing: border-box; }
         textarea { height: 120px; resize: vertical; font-family: monospace; }
         
         .range-wrap { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; }
@@ -35,21 +35,30 @@
         .btn-csv { background: var(--success); } .btn-csv:hover { background: #059669; }
         button:disabled { background: #cbd5e1; cursor: not-allowed; opacity: 0.7; }
 
-        /* 結果表格 */
-        .table-container { height: 650px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; }
-        table { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed; } /* 固定佈局防止跑版 */
+        /* 表格優化 */
+        .table-container { height: 700px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed; }
         th { background: #f8fafc; padding: 10px; text-align: left; position: sticky; top: 0; border-bottom: 2px solid #e2e8f0; color: #475569; z-index: 10; white-space: nowrap; }
         td { padding: 10px; border-bottom: 1px solid #f1f5f9; vertical-align: top; line-height: 1.4; word-wrap: break-word; }
         
-        /* 狀態標籤 */
         .tag { padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; display: inline-block; }
         .tag-ok { background: #dcfce7; color: #166534; }
-        .tag-err { background: #fee2e2; color: #991b1b; }
         .tag-wait { background: #f1f5f9; color: #64748b; }
 
-        /* 評分按鈕區 */
-        .eval-btns { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 5px; }
-        .eval-btn { padding: 4px 8px; font-size: 11px; border-radius: 4px; border: 1px solid #cbd5e1; background: white; color: #64748b; cursor: pointer; width: 48%; text-align: center; } 
+        /* 人工標記區佈局 (Grid) */
+        .eval-container { display: flex; flex-direction: column; gap: 8px; }
+        
+        /* 上層：三個下拉選單 */
+        .eval-selects { display: flex; gap: 5px; }
+        .eval-select { 
+            padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 11px; background: #f8fafc; 
+            flex: 1; cursor: pointer; color: #334155;
+        }
+        .eval-select:focus { border-color: var(--primary); outline: none; background: white; }
+
+        /* 下層：按鈕群 */
+        .eval-btns { display: flex; gap: 4px; }
+        .eval-btn { padding: 6px; font-size: 11px; border-radius: 4px; border: 1px solid #cbd5e1; background: white; color: #64748b; cursor: pointer; flex: 1; text-align: center; font-weight: 600; } 
         .eval-btn:hover { background: #f1f5f9; }
         .eval-btn.selected { color: white; border-color: transparent; }
         
@@ -64,7 +73,7 @@
 
 <header>
     <h1>🧪 2026 GPT 幻覺量化評測實驗室</h1>
-    <div class="badge">SYSTEM V7.1 - FULL METRICS + EVALUATION</div>
+    <div class="badge">SYSTEM V7.2 - ACADEMIC METRICS ADDED</div>
 </header>
 
 <div class="container">
@@ -91,10 +100,6 @@
             <input type="range" id="tempRange" min="0" max="1" step="0.1" value="0.7" oninput="document.getElementById('tempVal').innerText=this.value">
             <span class="range-val" id="tempVal">0.7</span>
         </div>
-        <div style="font-size:11px; color:#64748b; margin-top:-10px; margin-bottom:15px; line-height:1.4;">
-            0.0 = 精確/保守 (適合知識題)<br>
-            1.0 = 創意/隨機 (易產生幻覺)
-        </div>
 
         <label>3. 策略 (Strategy)</label>
         <select id="strategySelect">
@@ -113,7 +118,7 @@
         <div class="btn-group">
             <button class="btn-start" onclick="startExp()" id="btnStart">▶ 執行實驗</button>
             <button class="btn-stop" onclick="stopExp()" id="btnStop" disabled>⏹ 強制停止</button>
-            <button class="btn-csv" onclick="downloadCSV()" id="btnCsv" disabled>📥 下載數據 (CSV)</button>
+            <button class="btn-csv" onclick="downloadCSV()" id="btnCsv" disabled>📥 下載全數據 (CSV)</button>
         </div>
     </div>
 
@@ -123,12 +128,12 @@
             <table id="resTable">
                 <thead>
                     <tr>
-                        <th width="5%">#</th>
+                        <th width="4%">#</th>
                         <th width="20%">題目</th>
-                        <th width="35%">AI 回應</th>
-                        <th width="8%">字數</th>
-                        <th width="12%">狀態/延遲</th>
-                        <th width="20%">人工標記</th>
+                        <th width="30%">AI 回應</th>
+                        <th width="6%">字數</th>
+                        <th width="8%">狀態</th>
+                        <th width="32%">人工標記 (Annotation)</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -163,16 +168,16 @@
             const q = questions[i];
             updateProgress(i+1, questions.length);
 
-            // 1. Prompt 組合
+            // Prompt 組合
             let finalPrompt = q;
             if(strategy === 'persona') finalPrompt = `你是一位精通繁體中文與台灣文化的學術專家。請回答：${q}`;
             if(strategy === 'cot') finalPrompt = `問題：${q}\n請運用逐步思考 (Chain of Thought) 的方式分析並回答：`;
 
-            // 2. UI 預先顯示
+            // UI 預先顯示
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td>${i+1}</td>
-                <td><div style="max-height:80px; overflow:hidden;">${q}</div></td>
+                <td><div style="max-height:60px; overflow:hidden;">${q}</div></td>
                 <td style="color:#aaa">Generating...</td>
                 <td>-</td>
                 <td><span class="tag tag-wait">...</span></td>
@@ -181,9 +186,12 @@
             document.querySelector('#resTable tbody').appendChild(tr);
             scrollToBottom();
 
-            // 3. 呼叫 API
             const startT = Date.now();
-            let rowData = { id: i+1, model, strategy, temp, q, a: "", len: 0, latency: 0, type: "Unlabeled" };
+            let rowData = { 
+                id: i+1, model, strategy, temp, q, a: "", len: 0, latency: 0, 
+                // 新增三個學術指標
+                diff: "", verify: "", conf: "", type: "Unlabeled" 
+            };
 
             try {
                 const res = await fetch('/api/generate', {
@@ -193,39 +201,51 @@
                 });
                 const json = await res.json();
                 
-                if(json.error) throw new Error(json.error);
-
                 rowData.a = json.output;
                 rowData.len = json.length || json.output.length;
                 rowData.latency = json.latency;
 
-                // 4. 更新 UI (包含所有欄位)
+                // 更新 UI：加入「高 CP 值三參數」選單
                 tr.innerHTML = `
                     <td>${i+1}</td>
                     <td><div style="max-height:80px; overflow-y:auto;">${q}</div></td>
-                    <td><div style="max-height:120px; overflow-y:auto; font-size:0.9em;">${json.output}</div></td>
+                    <td><div style="max-height:100px; overflow-y:auto; font-size:0.9em;">${json.output}</div></td>
                     <td>${rowData.len}</td>
                     <td><span class="tag tag-ok">${rowData.latency}ms</span></td>
                     <td>
-                        <div class="eval-btns" id="btns-${i}">
-                            <button class="eval-btn" onclick="setLabel(${i}, 'OK', this)">✅ 正確</button>
-                            <button class="eval-btn" onclick="setLabel(${i}, 'A', this)">🤥 瞎掰</button>
-                            <button class="eval-btn" onclick="setLabel(${i}, 'B', this)">🔀 錯置</button>
-                            <button class="eval-btn" onclick="setLabel(${i}, 'D', this)">🤐 拒答</button>
+                        <div class="eval-container">
+                            <div class="eval-selects">
+                                <select class="eval-select" onchange="updateMeta(${i}, 'diff', this.value)" title="題目難度">
+                                    <option value="" disabled selected>難度...</option>
+                                    <option value="Easy">Easy (常識)</option>
+                                    <option value="Medium">Medium (專業)</option>
+                                    <option value="Hard">Hard (長尾)</option>
+                                </select>
+                                <select class="eval-select" onchange="updateMeta(${i}, 'verify', this.value)" title="可查證性">
+                                    <option value="" disabled selected>查證性...</option>
+                                    <option value="Verifiable">明確 (有標準答案)</option>
+                                    <option value="Ambiguous">模糊 (無標準答案)</option>
+                                </select>
+                                <select class="eval-select" onchange="updateMeta(${i}, 'conf', this.value)" title="回答語氣">
+                                    <option value="" disabled selected>語氣...</option>
+                                    <option value="Certain">肯定 (絕對)</option>
+                                    <option value="Cautious">保守 (可能)</option>
+                                    <option value="Unsure">不確定 (推測)</option>
+                                </select>
+                            </div>
+                            <div class="eval-btns" id="btns-${i}">
+                                <button class="eval-btn" onclick="setLabel(${i}, 'OK', this)">✅ 正確</button>
+                                <button class="eval-btn" onclick="setLabel(${i}, 'A', this)">🤥 瞎掰</button>
+                                <button class="eval-btn" onclick="setLabel(${i}, 'B', this)">🔀 錯置</button>
+                                <button class="eval-btn" onclick="setLabel(${i}, 'D', this)">🤐 拒答</button>
+                            </div>
                         </div>
                     </td>
                 `;
 
             } catch(e) {
                 rowData.a = "Error: " + e.message;
-                tr.innerHTML = `
-                    <td>${i+1}</td>
-                    <td>${q}</td>
-                    <td style="color:red">${e.message}</td>
-                    <td>0</td>
-                    <td><span class="tag tag-err">ERR</span></td>
-                    <td>-</td>
-                `;
+                tr.innerHTML = `<td>${i+1}</td><td colspan="4" style="color:red">${e.message}</td><td>Error</td>`;
             }
             
             resultsLog.push(rowData);
@@ -236,7 +256,12 @@
         updateUI(false);
     }
 
-    // 人工標記函式
+    // 更新新指標
+    window.updateMeta = function(index, key, value) {
+        if(resultsLog[index]) resultsLog[index][key] = value;
+    };
+
+    // 更新幻覺標記
     window.setLabel = function(index, type, btnElement) {
         if(!resultsLog[index]) return;
         resultsLog[index].type = type;
@@ -251,19 +276,19 @@
 
     function downloadCSV() {
         if(resultsLog.length === 0) return;
-        // 匯出完整欄位 CSV
-        let csv = "\uFEFFID,Model,Strategy,Temperature,Question,Answer,Length_Chars,Latency_ms,Hallucination_Type\n";
+        // 匯出包含「難度、查證性、語氣」的 CSV
+        let csv = "\uFEFFID,Model,Strategy,Temp,Question,Answer,Length,Latency,Difficulty,Verifiability,Confidence,Hallucination_Type\n";
         resultsLog.forEach(r => {
             const safeQ = r.q.replace(/"/g, '""');
             const safeA = r.a.replace(/"/g, '""').replace(/\n/g, ' ');
-            csv += `${r.id},${r.model},${r.strategy},${r.temp},"${safeQ}","${safeA}",${r.len},${r.latency},${r.type}\n`;
+            csv += `${r.id},${r.model},${r.strategy},${r.temp},"${safeQ}","${safeA}",${r.len},${r.latency},${r.diff},${r.verify},${r.conf},${r.type}\n`;
         });
         
         const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
         const ts = new Date().toISOString().slice(0,19).replace(/[:T]/g,"-");
-        link.download = `Exp_V7.1_${ts}.csv`;
+        link.download = `Exp_V7.2_${ts}.csv`;
         link.click();
     }
 
